@@ -23,7 +23,7 @@ program RayHunter;
 uses SysUtils, VectorMath, VRMLRayTracer, VRMLFlatScene, VRMLTriangleOctree,
   Images, KambiUtils, Object3dAsVRML, ProgressUnit, ProgressConsole,
   SpaceFillingCurves, ParseParametersUnit, VRMLNodesDetailOptions, VRMLNodes,
-  RaysWindow, KambiStringUtils, VRMLErrors;
+  RaysWindow, KambiStringUtils, VRMLErrors, KambiTimeUtils;
 
 var
   { parametry podawane w linii polecen -------------------------------------- }
@@ -193,7 +193,7 @@ const
            '  --primary-samples-count COUNT' +nl+
            '                        Set primary samples count (default 1)' +nl+
            nl+
-           SCamelotProgramHelpSuffix('rayhunter', Version, true));
+           SVrmlEngineProgramHelpSuffix('rayhunter', Version, true));
          ProgramBreak;
         end;
     14: begin
