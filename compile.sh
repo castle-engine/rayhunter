@@ -11,4 +11,4 @@ set -eu
 
 cd ../kambi_vrml_game_engine/
 
-fpc -dRELEASE @kambi.cfg ../rayhunter/rayhunter.dpr
+fpc -dRELEASE @kambi.cfg ../rayhunter/rayhunter.pasprogram
