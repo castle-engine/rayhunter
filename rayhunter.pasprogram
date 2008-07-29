@@ -251,7 +251,7 @@ begin
   Write('Reading scene from file "'+ExtractFileName(sceneFilename)+'"... ');
   scene := TVRMLFlatScene.Create(LoadAsVRML(SceneFilename, true), true);
   Writeln('done.');
-  Writeln(scene.Info(true, false));
+  Writeln(scene.Info(true, false, false));
 
   { calculate SceneOctree }
   SceneOctree := scene.CreateTriangleOctree(
