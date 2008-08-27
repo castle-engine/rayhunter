@@ -22,7 +22,7 @@
 
 program RayHunter;
 
-uses SysUtils, VectorMath, VRMLRayTracer, VRMLFlatScene, VRMLTriangleOctree,
+uses SysUtils, VectorMath, VRMLRayTracer, VRMLScene, VRMLTriangleOctree,
   Images, KambiUtils, Object3dAsVRML, ProgressUnit, ProgressConsole,
   SpaceFillingCurves, ParseParametersUnit, VRMLNodesDetailOptions, VRMLNodes,
   RaysWindow, KambiStringUtils, VRMLErrors, KambiTimeUtils;
@@ -66,7 +66,7 @@ var
   FirstRow: Cardinal = 0;
 
   { helper variables for doing the job --------------------------------------- }
-  Scene: TVRMLFlatScene;
+  Scene: TVRMLScene;
   SceneOctree: TVRMLTriangleOctree;
   Image: TImage;
 
@@ -249,7 +249,7 @@ begin
   { read scene and build SceneOctree }
   VRMLNonFatalError := @VRMLNonFatalError_WarningWrite;
   Write('Reading scene from file "'+ExtractFileName(sceneFilename)+'"... ');
-  scene := TVRMLFlatScene.Create(LoadAsVRML(SceneFilename, true), true);
+  scene := TVRMLScene.Create(LoadAsVRML(SceneFilename, true), true);
   Writeln('done.');
   Writeln(scene.Info(true, false, false));
 
