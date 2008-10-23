@@ -67,7 +67,6 @@ var
 
   { helper variables for doing the job --------------------------------------- }
   Scene: TVRMLScene;
-  SceneOctree: TVRMLTriangleOctree;
   Image: TImage;
 
 procedure PixelsMadeNotify(PixelsMadeCount: Cardinal; Data: Pointer);
@@ -242,7 +241,6 @@ begin
  { init some vars to nil values (to allow simple try..finally..end clause
    instead of nested try..try.. ... finally .. finally ...end) }
  scene := nil;
- SceneOctree := nil;
  Image := nil;
 
  try
@@ -253,9 +251,11 @@ begin
   Writeln('done.');
   Writeln(scene.Info(true, false, false));
 
-  { calculate SceneOctree }
-  SceneOctree := scene.CreateTriangleOctree(
-    OctreeMaxDepth, OctreeMaxLeafItemsCount, 'Building octree');
+  { calculate Scene.TriangleOctree }
+  Scene.TriangleOctreeMaxDepth := OctreeMaxDepth;
+  Scene.TriangleOctreeMaxLeafItemsCount := OctreeMaxLeafItemsCount;
+  Scene.TriangleOctreeProgressTitle := 'Building octree';
+  Scene.OctreeStrategy := osTriangle;
 
   { calculate CamPos/Dir/Up }
   scene.GetPerspectiveViewpoint(CamPos, CamDir, CamUp, DummyGravityUp);
@@ -312,7 +312,7 @@ begin
       end;
   end;
   RayTracer.Image := Image;
-  RayTracer.Octree := SceneOctree;
+  RayTracer.Octree := Scene.TriangleOctree;
   RayTracer.CamPosition := CamPos;
   RayTracer.CamDirection := CamDir;
   RayTracer.CamUp := CamUp;
@@ -323,7 +323,7 @@ begin
   RayTracer.FirstPixel :=  FirstRow * Image.Width;
 
   { go ! }
-  sceneOctree.DirectCollisionTestsCounter := 0;
+  Scene.TriangleOctree.DirectCollisionTestsCounter := 0;
   ProcessTimerBegin;
   Progress.Init(ImageHeight-FirstRow, 'Rendering');
   try
@@ -339,7 +339,7 @@ begin
     'Rendering done in %f seconds.' +nl+
     '%d simple collision tests done (one ray tested with one triangle).',
     [ RenderingTime,
-      sceneOctree.DirectCollisionTestsCounter ]));
+      Scene.TriangleOctree.DirectCollisionTestsCounter ]));
   case RTKind of
    rtkClassic: begin
       PrimaryRaysCount := Image.Width * (Image.Height-FirstRow);
@@ -349,7 +349,7 @@ begin
         '%f simple collision tests done per one primary ray.',
 	[ Image.Width, Image.Height, FirstRow, PrimaryRaysCount,
 	  PrimaryRaysCount / RenderingTime,
-	  sceneOctree.DirectCollisionTestsCounter /  PrimaryRaysCount ]));
+	  Scene.TriangleOctree.DirectCollisionTestsCounter /  PrimaryRaysCount ]));
      end;
    rtkPathTracer: begin
       PathsCount := Image.Width * (Image.Height-FirstRow) * PTPrimarySamplesCount * PTNonPrimarySamplesCount;
@@ -361,14 +361,13 @@ begin
 	[ Image.Width, Image.Height, FirstRow,
 	  PTPrimarySamplesCount, PTNonPrimarySamplesCount, PathsCount,
 	  PathsCount / RenderingTime,
-	  sceneOctree.DirectCollisionTestsCounter /  PathsCount ]));
+	  Scene.TriangleOctree.DirectCollisionTestsCounter /  PathsCount ]));
      end;
   end;
 
   SaveImage(Image, OutImageFilename);
  finally
   Image.Free;
-  sceneOctree.Free;
   scene.Free;
  end;
 end.
