@@ -255,7 +255,7 @@ begin
   Scene.TriangleOctreeMaxDepth := OctreeMaxDepth;
   Scene.TriangleOctreeMaxLeafItemsCount := OctreeMaxLeafItemsCount;
   Scene.TriangleOctreeProgressTitle := 'Building octree';
-  Scene.OctreeStrategy := osTriangle;
+  Scene.Octrees := [okVisibleTriangles];
 
   { calculate CamPos/Dir/Up }
   scene.GetPerspectiveViewpoint(CamPos, CamDir, CamUp, DummyGravityUp);
@@ -312,7 +312,7 @@ begin
       end;
   end;
   RayTracer.Image := Image;
-  RayTracer.Octree := Scene.TriangleOctree;
+  RayTracer.Octree := Scene.OctreeVisibleTriangles;
   RayTracer.CamPosition := CamPos;
   RayTracer.CamDirection := CamDir;
   RayTracer.CamUp := CamUp;
@@ -323,7 +323,7 @@ begin
   RayTracer.FirstPixel :=  FirstRow * Image.Width;
 
   { go ! }
-  Scene.TriangleOctree.DirectCollisionTestsCounter := 0;
+  Scene.OctreeVisibleTriangles.DirectCollisionTestsCounter := 0;
   ProcessTimerBegin;
   Progress.Init(ImageHeight-FirstRow, 'Rendering');
   try
@@ -339,7 +339,7 @@ begin
     'Rendering done in %f seconds.' +nl+
     '%d simple collision tests done (one ray tested with one triangle).',
     [ RenderingTime,
-      Scene.TriangleOctree.DirectCollisionTestsCounter ]));
+      Scene.OctreeVisibleTriangles.DirectCollisionTestsCounter ]));
   case RTKind of
    rtkClassic: begin
       PrimaryRaysCount := Image.Width * (Image.Height-FirstRow);
@@ -349,7 +349,7 @@ begin
         '%f simple collision tests done per one primary ray.',
 	[ Image.Width, Image.Height, FirstRow, PrimaryRaysCount,
 	  PrimaryRaysCount / RenderingTime,
-	  Scene.TriangleOctree.DirectCollisionTestsCounter /  PrimaryRaysCount ]));
+	  Scene.OctreeVisibleTriangles.DirectCollisionTestsCounter /  PrimaryRaysCount ]));
      end;
    rtkPathTracer: begin
       PathsCount := Image.Width * (Image.Height-FirstRow) * PTPrimarySamplesCount * PTNonPrimarySamplesCount;
@@ -361,7 +361,7 @@ begin
 	[ Image.Width, Image.Height, FirstRow,
 	  PTPrimarySamplesCount, PTNonPrimarySamplesCount, PathsCount,
 	  PathsCount / RenderingTime,
-	  Scene.TriangleOctree.DirectCollisionTestsCounter /  PathsCount ]));
+	  Scene.OctreeVisibleTriangles.DirectCollisionTestsCounter /  PathsCount ]));
      end;
   end;
 
