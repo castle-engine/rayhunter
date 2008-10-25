@@ -55,7 +55,7 @@ var
   ForceViewAngleY: Single = 0.0; { 0.0 oznacza ze nie zostalo podane }
 
   OctreeMaxDepth: integer = DefTriangleOctreeMaxDepth;
-  OctreeMaxLeafItemsCount: integer = DefTriangleOctreeMaxLeafItemsCount;
+  OctreeLeafCapacity: integer = DefTriangleOctreeLeafCapacity;
 
   WritePartialRows: Cardinal = 0;
   WritePartialRows_LogFile: string = '';
@@ -110,7 +110,7 @@ const
     (Short:  #0; Long: 'view-angle-x'; Argument: oaRequired),
     (Short:  #0; Long: 'force-view-angle-y'; Argument: oaRequired),
     (Short:  #0; Long: 'octree-max-depth'; Argument: oaRequired),
-    (Short:  #0; Long: 'octree-max-leaf-items-count'; Argument: oaRequired),
+    (Short:  #0; Long: 'octree-leaf-capacity'; Argument: oaRequired),
     (Short:  #0; Long: 'write-partial-rows'; Argument: oaRequired2Separate),
     (Short:  #0; Long: 'direct-illum-samples-count'; Argument: oaRequired),
     (Short:  #0; Long: 'r-roul-continue'; Argument: oaRequired),
@@ -131,7 +131,7 @@ const
     4 : ViewAngleX := StrToFloat(Argument);
     5 : ForceViewAngleY := StrToFloat(Argument);
     6 : OctreeMaxDepth := StrToInt(Argument);
-    7 : OctreeMaxLeafItemsCount := StrToInt(Argument);
+    7 : OctreeLeafCapacity := StrToInt(Argument);
     8 : begin
          WritePartialRows := StrToInt(SeparateArgs[1]);
          WritePartialRows_LogFile := SeparateArgs[2];
@@ -181,7 +181,7 @@ const
            '                        in OUT-IMAGE-FILENAME' +nl+
            VRMLNodesDetailOptionsHelp +nl+
            '  --octree-max-depth DEPTH ,' +nl+
-           '  --octree-max-leaf-items-count COUNT' +nl+
+           '  --octree-leaf-capacity CAPACITY' +nl+
            '                        Set the parameters of generated triangle octree' +nl+
            nl+
            'Options meaningfull only for path tracer (ignored if supplied for classic' +nl+
@@ -253,7 +253,7 @@ begin
 
   { calculate Scene.TriangleOctree }
   Scene.TriangleOctreeMaxDepth := OctreeMaxDepth;
-  Scene.TriangleOctreeMaxLeafItemsCount := OctreeMaxLeafItemsCount;
+  Scene.TriangleOctreeLeafCapacity := OctreeLeafCapacity;
   Scene.TriangleOctreeProgressTitle := 'Building octree';
   Scene.Octrees := [okVisibleTriangles];
 
