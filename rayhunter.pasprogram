@@ -252,8 +252,8 @@ begin
   Writeln(scene.Info(true, false, false));
 
   { calculate Scene.TriangleOctree }
-  Scene.TriangleOctreeMaxDepth := OctreeMaxDepth;
-  Scene.TriangleOctreeLeafCapacity := OctreeLeafCapacity;
+  Scene.TriangleOctreeLimits^.MaxDepth := OctreeMaxDepth;
+  Scene.TriangleOctreeLimits^.LeafCapacity := OctreeLeafCapacity;
   Scene.TriangleOctreeProgressTitle := 'Building octree';
   Scene.Spatial := [ssVisibleTriangles];
 
