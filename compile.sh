@@ -11,4 +11,4 @@ set -eu
 
 cd ../kambi_vrml_game_engine/
 
-fpc -dRELEASE @kambi.cfg ../rayhunter/rayhunter.pasprogram
+fpc -dRELEASE "${KAMBI_FPC_OPTIONS:-}" @kambi.cfg ../rayhunter/rayhunter.pasprogram
