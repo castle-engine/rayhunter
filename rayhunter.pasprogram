@@ -245,7 +245,7 @@ begin
 
  try
   { read scene and build SceneOctree }
-  VRMLNonFatalError := @VRMLNonFatalError_WarningWrite;
+  VRMLWarning := @VRMLWarning_Write;
   Write('Reading scene from file "'+ExtractFileName(sceneFilename)+'"... ');
   scene := TVRMLScene.Create(LoadAsVRML(SceneFilename, true), true);
   Writeln('done.');
