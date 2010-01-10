@@ -247,7 +247,8 @@ begin
   { read scene and build SceneOctree }
   VRMLWarning := @VRMLWarning_Write;
   Write('Reading scene from file "'+ExtractFileName(sceneFilename)+'"... ');
-  scene := TVRMLScene.Create(LoadAsVRML(SceneFilename, true), true);
+  scene := TVRMLScene.Create(nil);
+  scene.Load(SceneFilename, true);
   Writeln('done.');
   Writeln(scene.Info(true, false, false));
 
