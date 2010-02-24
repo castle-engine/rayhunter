@@ -23,7 +23,7 @@
 program RayHunter;
 
 uses SysUtils, VectorMath, VRMLRayTracer, VRMLScene, VRMLTriangleOctree,
-  Images, KambiUtils, Object3dAsVRML, ProgressUnit, ProgressConsole,
+  Images, KambiUtils, Object3DAsVRML, ProgressUnit, ProgressConsole,
   SpaceFillingCurves, ParseParametersUnit, VRMLNodesDetailOptions, VRMLNodes,
   RaysWindow, KambiStringUtils, VRMLErrors, KambiTimeUtils;
 
