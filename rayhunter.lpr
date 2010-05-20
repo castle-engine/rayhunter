@@ -51,8 +51,6 @@ var
   WasParam_CamDir: boolean = false;
   WasParam_CamUp: boolean = false;
 
-  { TODO: for now, PerspectiveView is always @true,
-    and OrthoViewDimensions don't really matter. }
   PerspectiveView: boolean = true;
   { PerspectiveViewAngles[1] = 0 means "unspecified",
     will be adjusted to image dims }
@@ -107,7 +105,7 @@ end;
 
 const
   Version = '1.3.1';
-  Options: array[0..14]of TOption =
+  Options: array[0..15]of TOption =
   ( (Short:  #0; Long: 'scene-bg-color'; Argument: oaRequired3Separate),
     (Short: 'p'; Long: 'camera-pos'; Argument: oaRequired3Separate),
     (Short: 'd'; Long: 'camera-dir'; Argument: oaRequired3Separate),
@@ -122,7 +120,8 @@ const
     (Short:  #0; Long: 'primary-samples-count'; Argument: oaRequired),
     (Short:  #0; Long: 'first-row'; Argument: oaRequired),
     (Short: 'h'; Long: 'help'; Argument: oaNone),
-    (Short: 'v'; Long: 'version'; Argument: oaNone)
+    (Short: 'v'; Long: 'version'; Argument: oaNone),
+    (Short: #0; Long: 'ortho'; Argument: oaRequired4Separate)
   );
 
   procedure OptionProc(OptionNum: Integer; HasArgument: boolean;
@@ -133,8 +132,8 @@ const
     1 : begin Param_CamPos := SeparateArgsToVector3Single(SeparateArgs); WasParam_CamPos := true end;
     2 : begin Param_CamDir := SeparateArgsToVector3Single(SeparateArgs); WasParam_CamDir := true end;
     3 : begin Param_CamUp := SeparateArgsToVector3Single(SeparateArgs); WasParam_CamUp := true end;
-    4 : PerspectiveViewAngles[0] := StrToFloat(Argument);
-    5 : PerspectiveViewAngles[1] := StrToFloat(Argument);
+    4 : begin PerspectiveView := true; PerspectiveViewAngles[0] := StrToFloat(Argument); end;
+    5 : begin PerspectiveView := true; PerspectiveViewAngles[1] := StrToFloat(Argument); end;
     6 : OctreeMaxDepth := StrToInt(Argument);
     7 : OctreeLeafCapacity := StrToInt(Argument);
     8 : begin
@@ -170,9 +169,11 @@ const
            '  -d / --camera-dir DIR.X DIR.Y DIR.Z ,' +nl+
            '  -u / --camera-up  UP.X  UP.Y  UP.Z' +nl+
            '                        Set initial camera position, direction and up' +nl+
-           '  --view-angle-x ANGLE  Set horizontal viewing angle (in degrees)' +nl+
+           '  --view-angle-x ANGLE  Set horizontal viewing angle (in degrees).' +nl+
            '  --force-view-angle-y ANGLE' +nl+
-           '                        Set vertical viewing angle (in degrees)' +nl+
+           '                        Set vertical viewing angle (in degrees).' +nl+
+           '  --ortho LEFT BOTTOM RIGHT TOP' +nl+
+           '                        Use orthographic projection with given dimensions.' +nl+
            '  --scene-bg-color RED GREEN BLUE' +nl+
            '                        Set color emitted by scene background' +nl+
            '  --write-partial-rows ROWS LOG-ROWS-FILE' +nl+
@@ -205,6 +206,13 @@ const
     14: begin
          Writeln(Version);
          ProgramBreak;
+        end;
+    15 :begin
+          PerspectiveView := false;
+          OrthoViewDimensions[0] := StrToFloat(SeparateArgs[1]);
+          OrthoViewDimensions[1] := StrToFloat(SeparateArgs[2]);
+          OrthoViewDimensions[2] := StrToFloat(SeparateArgs[3]);
+          OrthoViewDimensions[3] := StrToFloat(SeparateArgs[4]);
         end;
     else raise EInternalError.Create('OptionProc');
    end;
