@@ -51,8 +51,13 @@ var
   WasParam_CamDir: boolean = false;
   WasParam_CamUp: boolean = false;
 
-  ViewAngleX: Single = 60;
-  ForceViewAngleY: Single = 0.0; { 0.0 oznacza ze nie zostalo podane }
+  { TODO: for now, PerspectiveView is always @true,
+    and OrthoViewDimensions don't really matter. }
+  PerspectiveView: boolean = true;
+  { PerspectiveViewAngles[1] = 0 means "unspecified",
+    will be adjusted to image dims }
+  PerspectiveViewAngles: TVector2Single = (60, 0);
+  OrthoViewDimensions: TVector4Single = (0, 0, 0, 0);
 
   OctreeMaxDepth: integer = DefTriangleOctreeMaxDepth;
   OctreeLeafCapacity: integer = DefTriangleOctreeLeafCapacity;
@@ -128,8 +133,8 @@ const
     1 : begin Param_CamPos := SeparateArgsToVector3Single(SeparateArgs); WasParam_CamPos := true end;
     2 : begin Param_CamDir := SeparateArgsToVector3Single(SeparateArgs); WasParam_CamDir := true end;
     3 : begin Param_CamUp := SeparateArgsToVector3Single(SeparateArgs); WasParam_CamUp := true end;
-    4 : ViewAngleX := StrToFloat(Argument);
-    5 : ForceViewAngleY := StrToFloat(Argument);
+    4 : PerspectiveViewAngles[0] := StrToFloat(Argument);
+    5 : PerspectiveViewAngles[1] := StrToFloat(Argument);
     6 : OctreeMaxDepth := StrToInt(Argument);
     7 : OctreeLeafCapacity := StrToInt(Argument);
     8 : begin
@@ -207,7 +212,7 @@ const
 
 var
   { rest of helper variables }
-  RenderingTime, ViewAngleY: Single;
+  RenderingTime: Single;
   PathsCount, PrimaryRaysCount: Cardinal;
   OutImageClass: TImageClass;
   RayTracer: TRayTracer;
@@ -289,9 +294,9 @@ begin
   end;
 
   { init ViewAngleY }
-  if ForceViewAngleY <> 0.0 then
-   ViewAngleY := ForceViewAngleY else
-   ViewAngleY := AdjustViewAngleDegToAspectRatio(ViewAngleX, ImageHeight/ImageWidth);
+  if PerspectiveViewAngles[1] = 0.0 then
+    PerspectiveViewAngles[1] := AdjustViewAngleDegToAspectRatio(
+      PerspectiveViewAngles[0], ImageHeight/ImageWidth);
 
   { create RayTracer instance, set it's properties }
   case RTKind of
@@ -320,8 +325,9 @@ begin
   RayTracer.CamPosition := CamPos;
   RayTracer.CamDirection := CamDir;
   RayTracer.CamUp := CamUp;
-  RayTracer.ViewAngleDegX := ViewAngleX;
-  RayTracer.ViewAngleDegY := ViewAngleY;
+  RayTracer.PerspectiveView := PerspectiveView;
+  RayTracer.PerspectiveViewAngles := PerspectiveViewAngles;
+  RayTracer.OrthoViewDimensions := OrthoViewDimensions;
   RayTracer.SceneBGColor := SceneBGColor;
   RayTracer.PixelsMadeNotifier := @PixelsMadeNotify;
   RayTracer.FirstPixel :=  FirstRow * Image.Width;
