@@ -294,8 +294,8 @@ begin
      i zakryje to tlo ale ciagle gdy bedziemy zapisywac write-partial-rows to
      to tlo bedzie widoczne. A nie chcemy zeby byly tam widoczne jakies smieci
      typowe dla niezainicjowanej pamieci. }
-   if Image is TRGBEImage then
-    Image.Clear(Vector3ToRGBE(SceneBGColor)) else
+   if Image is TRGBFloatImage then
+    TRGBFloatImage(Image).Clear(SceneBGColor) else
    if Image is TRGBImage then
     Image.Clear(Vector4Byte(Vector4Single(SceneBGColor, 0))) else
     raise EInternalError.Create('inv OutImageClass');
