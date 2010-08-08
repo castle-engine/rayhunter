@@ -24,7 +24,8 @@ program RayHunter;
 
 uses SysUtils, VectorMath, VRMLRayTracer, VRMLScene, VRMLTriangleOctree,
   Images, KambiUtils, Object3DAsVRML, ProgressUnit, ProgressConsole,
-  SpaceFillingCurves, ParseParametersUnit, VRMLNodesDetailOptions, VRMLNodes,
+  SpaceFillingCurves, ParseParametersUnit, VRMLNodesDetailOptions, 
+  VRMLFields, VRMLNodes,
   RaysWindow, KambiStringUtils, VRMLErrors, KambiTimeUtils;
 
 var
@@ -52,10 +53,12 @@ var
   WasParam_CamUp: boolean = false;
 
   PerspectiveView: boolean = true;
+  { Was PerspectiveView value explicitly states by command-line param? }
+  PerspectiveViewExplicit: boolean = false;
   { PerspectiveViewAngles[1] = 0 means "unspecified",
     will be adjusted to image dims }
   PerspectiveViewAngles: TVector2Single = (60, 0);
-  OrthoViewDimensions: TVector4Single = (0, 0, 0, 0);
+  OrthoViewDimensions: TVector4Single = (-1, -1, 1, 1);
 
   OctreeMaxDepth: integer = DefTriangleOctreeMaxDepth;
   OctreeLeafCapacity: integer = DefTriangleOctreeLeafCapacity;
@@ -132,8 +135,8 @@ const
     1 : begin Param_CamPos := SeparateArgsToVector3Single(SeparateArgs); WasParam_CamPos := true end;
     2 : begin Param_CamDir := SeparateArgsToVector3Single(SeparateArgs); WasParam_CamDir := true end;
     3 : begin Param_CamUp := SeparateArgsToVector3Single(SeparateArgs); WasParam_CamUp := true end;
-    4 : begin PerspectiveView := true; PerspectiveViewAngles[0] := StrToFloat(Argument); end;
-    5 : begin PerspectiveView := true; PerspectiveViewAngles[1] := StrToFloat(Argument); end;
+    4 : begin PerspectiveViewExplicit := true; PerspectiveView := true; PerspectiveViewAngles[0] := StrToFloat(Argument); end;
+    5 : begin PerspectiveViewExplicit := true; PerspectiveView := true; PerspectiveViewAngles[1] := StrToFloat(Argument); end;
     6 : OctreeMaxDepth := StrToInt(Argument);
     7 : OctreeLeafCapacity := StrToInt(Argument);
     8 : begin
@@ -209,6 +212,7 @@ const
         end;
     15 :begin
           PerspectiveView := false;
+          PerspectiveViewExplicit := true;
           OrthoViewDimensions[0] := StrToFloat(SeparateArgs[1]);
           OrthoViewDimensions[1] := StrToFloat(SeparateArgs[2]);
           OrthoViewDimensions[2] := StrToFloat(SeparateArgs[3]);
@@ -225,6 +229,9 @@ var
   OutImageClass: TImageClass;
   RayTracer: TRayTracer;
   DummyGravityUp: TVector3Single;
+  ModelProjectionType: TProjectionType;
+  Viewpoint: TVRMLViewpointNode;
+  FieldOfView: TMFFloat;
 begin
  { parsing parameters with no assigned positions }
  VRMLNodesDetailOptionsParse;
@@ -272,7 +279,26 @@ begin
   Scene.Spatial := [ssVisibleTriangles];
 
   { calculate CamPos/Dir/Up }
-  scene.GetPerspectiveViewpoint(CamPos, CamDir, CamUp, DummyGravityUp);
+  Viewpoint := scene.GetViewpoint(ModelProjectionType, CamPos, CamDir, CamUp, DummyGravityUp);
+
+  if not PerspectiveViewExplicit then
+  begin
+    { If user didn't choose explicitly perspective or orthographic projection,
+      then viewpoint node determines it. }
+    PerspectiveView := ModelProjectionType = ptPerspective;
+    if (Viewpoint <> nil) and
+       (Viewpoint is TNodeOrthoViewpoint) then
+    begin
+      { So we know that user didn't also explicitly specify ortho dimensions.
+        So use the ones from viewpoint. }
+      FieldOfView := TNodeOrthoViewpoint(Viewpoint).FdFieldOfView;
+      if FieldOfView.Count > 0 then OrthoViewDimensions[0] := FieldOfView.Items[0];
+      if FieldOfView.Count > 1 then OrthoViewDimensions[1] := FieldOfView.Items[1];
+      if FieldOfView.Count > 2 then OrthoViewDimensions[2] := FieldOfView.Items[2];
+      if FieldOfView.Count > 3 then OrthoViewDimensions[3] := FieldOfView.Items[3];
+    end;
+  end;
+
   if WasParam_CamPos then CamPos := Param_CamPos;
   if WasParam_CamDir then CamDir := Param_CamDir;
   if WasParam_CamUp  then CamUp := Param_CamUp ;
