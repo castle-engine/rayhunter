@@ -24,7 +24,7 @@ program RayHunter;
 
 uses SysUtils, VectorMath, VRMLRayTracer, VRMLScene, VRMLTriangleOctree,
   Images, KambiUtils, Object3DAsVRML, ProgressUnit, ProgressConsole,
-  SpaceFillingCurves, ParseParametersUnit, VRMLNodesDetailOptions, 
+  SpaceFillingCurves, ParseParametersUnit, VRMLNodesDetailOptions,
   VRMLFields, VRMLNodes,
   RaysWindow, KambiStringUtils, VRMLErrors, KambiTimeUtils;
 
@@ -150,9 +150,9 @@ const
     13: begin
          InfoWrite(
           {'0123456789012345678901234567890123456789012345678901234567890123456789012345' }
-           'RayHunter: ray-tracer based on VRML 1.0 file format (but handles 3DS too).' +nl+
+           'RayHunter: ray-tracer for VRML / X3D (and others, like  3DS) models.' +nl+
            'Classic (Whitted-style) ray-tracer (based on local lighting equations' +nl+
-           'from VRML 97 specification) and simple Monte Carlo path tracer are' +nl+
+           'from VRML 97 / X3D specification) and simple Monte Carlo path tracer are' +nl+
            'available.' +nl+
            nl+
            'Usage:' +nl+
