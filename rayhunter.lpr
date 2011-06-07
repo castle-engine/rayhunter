@@ -232,6 +232,7 @@ var
   ModelProjectionType: TProjectionType;
   Viewpoint: TVRMLViewpointNode;
   FieldOfView: TMFFloat;
+  H: PLightInstance;
 begin
  { parsing parameters with no assigned positions }
  VRMLNodesDetailOptionsParse;
@@ -347,9 +348,10 @@ begin
         RayTracer := TClassicRayTracer.Create;
         TClassicRayTracer(RayTracer).InitialDepth := RTDepth;
         TClassicRayTracer(RayTracer).FogNode := Scene.FogNode;
-        TClassicRayTracer(RayTracer).HeadLightExists := Scene.HeadLight <> nil;
-        if Scene.HeadLight <> nil then
-          TClassicRayTracer(RayTracer).HeadLight := Scene.HeadLight.LightInstance(CamPos, CamDir);
+        H := Scene.HeadLight(CamPos, CamDir);
+        TClassicRayTracer(RayTracer).HeadLightExists := H <> nil;
+        if H <> nil then
+          TClassicRayTracer(RayTracer).HeadLight := H^;
       end;
     rtkPathTracer:
       begin
