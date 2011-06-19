@@ -25,8 +25,14 @@ program RayHunter;
 uses SysUtils, VectorMath, VRMLRayTracer, VRMLScene, VRMLTriangleOctree,
   Images, KambiUtils, Object3DAsVRML, ProgressUnit, ProgressConsole,
   SpaceFillingCurves, ParseParametersUnit, VRMLNodesDetailOptions,
-  VRMLFields, VRMLNodes,
-  RaysWindow, KambiStringUtils, VRMLErrors, KambiTimeUtils;
+  VRMLFields, VRMLNodes, RaysWindow, KambiStringUtils, VRMLErrors,
+  KambiTimeUtils,
+  { TODO: These are OpenGL-specific units, and we would prefer not to use
+    them in rayhunter. Scene should be TVRMLScene (not TVRMLGLScene),
+    and scene manager should be... well, something not related to OpenGL.
+    All this trouble is needed now to get BaseLights (containing headlight)
+    from scene manager. }
+  KambiSceneManager, VRMLGLScene;
 
 var
   { parametry podawane w linii polecen -------------------------------------- }
@@ -72,7 +78,7 @@ var
   FirstRow: Cardinal = 0;
 
   { helper variables for doing the job --------------------------------------- }
-  Scene: TVRMLScene;
+  Scene: TVRMLGLScene;
   Image: TImage;
 
 procedure PixelsMadeNotify(PixelsMadeCount: Cardinal; Data: Pointer);
@@ -232,7 +238,7 @@ var
   ModelProjectionType: TProjectionType;
   Viewpoint: TVRMLViewpointNode;
   FieldOfView: TMFFloat;
-  H: PLightInstance;
+  SceneManager: TKamSceneManager;
 begin
  { parsing parameters with no assigned positions }
  VRMLNodesDetailOptionsParse;
@@ -263,12 +269,13 @@ begin
    instead of nested try..try.. ... finally .. finally ...end) }
  scene := nil;
  Image := nil;
+ SceneManager := nil;
 
  try
   { read scene and build SceneOctree }
   VRMLWarning := @VRMLWarning_Write;
   Write('Reading scene from file "'+ExtractFileName(sceneFilename)+'"... ');
-  scene := TVRMLScene.Create(nil);
+  scene := TVRMLGLScene.Create(nil);
   scene.Load(SceneFilename, true);
   Writeln('done.');
   Writeln(scene.Info(true, false, false));
@@ -278,6 +285,11 @@ begin
   Scene.TriangleOctreeLimits^.LeafCapacity := OctreeLeafCapacity;
   Scene.TriangleOctreeProgressTitle := 'Building octree';
   Scene.Spatial := [ssVisibleTriangles];
+
+  { calculate SceneManager (will be used for headlight in BaseLights) }
+  SceneManager := TKamSceneManager.Create(nil);
+  SceneManager.MainScene := Scene;
+  SceneManager.Items.Add(Scene);
 
   { calculate CamPos/Dir/Up }
   Viewpoint := scene.GetViewpoint(ModelProjectionType, CamPos, CamDir, CamUp, DummyGravityUp);
@@ -348,10 +360,7 @@ begin
         RayTracer := TClassicRayTracer.Create;
         TClassicRayTracer(RayTracer).InitialDepth := RTDepth;
         TClassicRayTracer(RayTracer).FogNode := Scene.FogNode;
-        H := Scene.HeadLight(CamPos, CamDir);
-        TClassicRayTracer(RayTracer).HeadLightExists := H <> nil;
-        if H <> nil then
-          TClassicRayTracer(RayTracer).HeadLight := H^;
+        TClassicRayTracer(RayTracer).BaseLights := SceneManager.BaseLights;
       end;
     rtkPathTracer:
       begin
@@ -420,8 +429,9 @@ begin
 
   SaveImage(Image, OutImageFilename);
  finally
-  Image.Free;
-  scene.Free;
+  FreeAndNil(Image);
+  FreeAndNil(Scene);
+  FreeAndNil(SceneManager);
  end;
 end.
 
