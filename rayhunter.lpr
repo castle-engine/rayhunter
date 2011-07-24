@@ -25,7 +25,7 @@ program RayHunter;
 uses SysUtils, VectorMath, VRMLRayTracer, VRMLScene, VRMLTriangleOctree,
   Images, KambiUtils, ProgressUnit, ProgressConsole,
   ParseParametersUnit, VRMLNodesDetailOptions,
-  VRMLFields, VRMLNodes, RaysWindow, KambiStringUtils, VRMLErrors,
+  VRMLFields, VRMLNodes, RaysWindow, KambiStringUtils, KambiWarnings,
   KambiTimeUtils,
   { TODO: These are OpenGL-specific units, and we would prefer not to use
     them in rayhunter. Scene should be TVRMLScene (not TVRMLGLScene),
@@ -273,7 +273,7 @@ begin
 
  try
   { read scene and build SceneOctree }
-  VRMLWarning := @VRMLWarning_Write;
+  OnWarning := @OnWarningWrite;
   Write('Reading scene from file "'+ExtractFileName(sceneFilename)+'"... ');
   scene := TVRMLGLScene.Create(nil);
   scene.Load(SceneFilename, true);
