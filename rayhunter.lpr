@@ -251,16 +251,16 @@ begin
   else raise EInvalidParams.Create('Invalid RayTracer kind : '+
     'expected "classic" or "path", got ' + Parameters[1]);
  end;
- Parameters.Delete(0, 1);
- RTDepth := StrToInt(Parameters[1]); Parameters.Delete(0, 1);
+ Parameters.Delete(0);
+ RTDepth := StrToInt(Parameters[1]); Parameters.Delete(0);
  if RTKind = rtkPathTracer then
  begin
-  PTNonPrimarySamplesCount := StrToInt(Parameters[1]); Parameters.Delete(0, 1);
+  PTNonPrimarySamplesCount := StrToInt(Parameters[1]); Parameters.Delete(0);
  end;
- ImageWidth := StrToInt(Parameters[1]); Parameters.Delete(0, 1);
- ImageHeight := StrToInt(Parameters[1]); Parameters.Delete(0, 1);
- SceneFilename := Parameters[1]; Parameters.Delete(0, 1);
- OutImageFilename := Parameters[1]; Parameters.Delete(0, 1);
+ ImageWidth := StrToInt(Parameters[1]); Parameters.Delete(0);
+ ImageHeight := StrToInt(Parameters[1]); Parameters.Delete(0);
+ SceneFilename := Parameters[1]; Parameters.Delete(0);
+ OutImageFilename := Parameters[1]; Parameters.Delete(0);
 
  { register progres showing on console }
  Progress.UserInterface := ProgressConsoleInterface;
