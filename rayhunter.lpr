@@ -24,7 +24,7 @@ program RayHunter;
 
 uses SysUtils, VectorMath, VRMLRayTracer, VRMLScene, VRMLTriangleOctree,
   Images, KambiUtils, ProgressUnit, ProgressConsole,
-  ParseParametersUnit, VRMLNodesDetailOptions,
+  KambiParameters, VRMLNodesDetailOptions,
   VRMLFields, VRMLNodes, RaysWindow, KambiStringUtils, KambiWarnings,
   KambiTimeUtils,
   { TODO: These are OpenGL-specific units, and we would prefer not to use
@@ -242,7 +242,7 @@ var
 begin
  { parsing parameters with no assigned positions }
  VRMLNodesDetailOptionsParse;
- ParseParameters(Options, @OptionProc, nil);
+ Parameters.Parse(Options, @OptionProc, nil);
  { parsing parameters with assigned positions }
  Parameters.CheckHighAtLeast(6);
  case ArrayPosText(Parameters[1], ['classic', 'path']) of
