@@ -236,7 +236,7 @@ var
   RayTracer: TRayTracer;
   DummyGravityUp: TVector3Single;
   ModelProjectionType: TProjectionType;
-  Viewpoint: TVRMLViewpointNode;
+  Viewpoint: TAbstractViewpointNode;
   FieldOfView: TMFFloat;
   SceneManager: TKamSceneManager;
 begin
@@ -300,23 +300,23 @@ begin
       then viewpoint node determines it. }
     PerspectiveView := ModelProjectionType = ptPerspective;
     if (Viewpoint <> nil) and
-       (Viewpoint is TNodeOrthoViewpoint) then
+       (Viewpoint is TOrthoViewpointNode) then
     begin
       { So we know that user didn't also explicitly specify ortho dimensions.
         So use the ones from viewpoint. }
-      FieldOfView := TNodeOrthoViewpoint(Viewpoint).FdFieldOfView;
+      FieldOfView := TOrthoViewpointNode(Viewpoint).FdFieldOfView;
       if FieldOfView.Count > 0 then OrthoViewDimensions[0] := FieldOfView.Items[0];
       if FieldOfView.Count > 1 then OrthoViewDimensions[1] := FieldOfView.Items[1];
       if FieldOfView.Count > 2 then OrthoViewDimensions[2] := FieldOfView.Items[2];
       if FieldOfView.Count > 3 then OrthoViewDimensions[3] := FieldOfView.Items[3];
     end else
     if (Viewpoint <> nil) and
-       (Viewpoint is TNodeOrthographicCamera) then
+       (Viewpoint is TOrthographicCameraNode) then
     begin
-      OrthoViewDimensions[0] := -TNodeOrthographicCamera(Viewpoint).FdHeight.Value / 2;
-      OrthoViewDimensions[1] := -TNodeOrthographicCamera(Viewpoint).FdHeight.Value / 2;
-      OrthoViewDimensions[2] :=  TNodeOrthographicCamera(Viewpoint).FdHeight.Value / 2;
-      OrthoViewDimensions[3] :=  TNodeOrthographicCamera(Viewpoint).FdHeight.Value / 2;
+      OrthoViewDimensions[0] := -TOrthographicCameraNode(Viewpoint).FdHeight.Value / 2;
+      OrthoViewDimensions[1] := -TOrthographicCameraNode(Viewpoint).FdHeight.Value / 2;
+      OrthoViewDimensions[2] :=  TOrthographicCameraNode(Viewpoint).FdHeight.Value / 2;
+      OrthoViewDimensions[3] :=  TOrthographicCameraNode(Viewpoint).FdHeight.Value / 2;
     end;
   end;
 
