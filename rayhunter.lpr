@@ -209,7 +209,7 @@ const
            '  --primary-samples-count COUNT' +nl+
            '                        Set primary samples count (default 1)' +nl+
            nl+
-           SVrmlEngineProgramHelpSuffix('rayhunter', Version, true));
+           SCastleEngineProgramHelpSuffix('rayhunter', Version, true));
          ProgramBreak;
         end;
     14: begin
