@@ -311,12 +311,12 @@ begin
       if FieldOfView.Count > 3 then OrthoViewDimensions[3] := FieldOfView.Items[3];
     end else
     if (Viewpoint <> nil) and
-       (Viewpoint is TOrthographicCameraNode) then
+       (Viewpoint is TOrthographicCameraNode_1) then
     begin
-      OrthoViewDimensions[0] := -TOrthographicCameraNode(Viewpoint).FdHeight.Value / 2;
-      OrthoViewDimensions[1] := -TOrthographicCameraNode(Viewpoint).FdHeight.Value / 2;
-      OrthoViewDimensions[2] :=  TOrthographicCameraNode(Viewpoint).FdHeight.Value / 2;
-      OrthoViewDimensions[3] :=  TOrthographicCameraNode(Viewpoint).FdHeight.Value / 2;
+      OrthoViewDimensions[0] := -TOrthographicCameraNode_1(Viewpoint).FdHeight.Value / 2;
+      OrthoViewDimensions[1] := -TOrthographicCameraNode_1(Viewpoint).FdHeight.Value / 2;
+      OrthoViewDimensions[2] :=  TOrthographicCameraNode_1(Viewpoint).FdHeight.Value / 2;
+      OrthoViewDimensions[3] :=  TOrthographicCameraNode_1(Viewpoint).FdHeight.Value / 2;
     end;
   end;
 
