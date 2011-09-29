@@ -23,16 +23,16 @@
 program RayHunter;
 
 uses SysUtils, VectorMath, VRMLRayTracer, VRMLScene, VRMLTriangleOctree,
-  Images, KambiUtils, ProgressUnit, ProgressConsole,
-  KambiParameters, VRMLNodesDetailOptions,
-  VRMLFields, VRMLNodes, RaysWindow, KambiStringUtils, KambiWarnings,
-  KambiTimeUtils,
+  Images, CastleUtils, ProgressUnit, ProgressConsole,
+  CastleParameters, VRMLNodesDetailOptions,
+  VRMLFields, VRMLNodes, RaysWindow, CastleStringUtils, CastleWarnings,
+  CastleTimeUtils,
   { TODO: These are OpenGL-specific units, and we would prefer not to use
     them in rayhunter. Scene should be T3DSceneCore (not T3DScene),
     and scene manager should be... well, something not related to OpenGL.
     All this trouble is needed now to get BaseLights (containing headlight)
     from scene manager. }
-  KambiSceneManager, VRMLGLScene;
+  CastleSceneManager, VRMLGLScene;
 
 var
   { parametry podawane w linii polecen -------------------------------------- }
