@@ -28,7 +28,7 @@ uses SysUtils, VectorMath, VRMLRayTracer, VRMLScene, VRMLTriangleOctree,
   VRMLFields, VRMLNodes, RaysWindow, KambiStringUtils, KambiWarnings,
   KambiTimeUtils,
   { TODO: These are OpenGL-specific units, and we would prefer not to use
-    them in rayhunter. Scene should be TVRMLScene (not TVRMLGLScene),
+    them in rayhunter. Scene should be T3DSceneCore (not T3DScene),
     and scene manager should be... well, something not related to OpenGL.
     All this trouble is needed now to get BaseLights (containing headlight)
     from scene manager. }
@@ -78,7 +78,7 @@ var
   FirstRow: Cardinal = 0;
 
   { helper variables for doing the job --------------------------------------- }
-  Scene: TVRMLGLScene;
+  Scene: T3DScene;
   Image: TImage;
 
 procedure PixelsMadeNotify(PixelsMadeCount: Cardinal; Data: Pointer);
@@ -238,7 +238,7 @@ var
   ModelProjectionType: TProjectionType;
   Viewpoint: TAbstractViewpointNode;
   FieldOfView: TMFFloat;
-  SceneManager: TKamSceneManager;
+  SceneManager: TCastleSceneManager;
 begin
  { parsing parameters with no assigned positions }
  VRMLNodesDetailOptionsParse;
@@ -275,7 +275,7 @@ begin
   { read scene and build SceneOctree }
   OnWarning := @OnWarningWrite;
   Write('Reading scene from file "'+ExtractFileName(sceneFilename)+'"... ');
-  scene := TVRMLGLScene.Create(nil);
+  scene := T3DScene.Create(nil);
   scene.Load(SceneFilename, true);
   Writeln('done.');
   Writeln(scene.Info(true, false, false));
@@ -287,7 +287,7 @@ begin
   Scene.Spatial := [ssVisibleTriangles];
 
   { calculate SceneManager (will be used for headlight in BaseLights) }
-  SceneManager := TKamSceneManager.Create(nil);
+  SceneManager := TCastleSceneManager.Create(nil);
   SceneManager.MainScene := Scene;
   SceneManager.Items.Add(Scene);
 
