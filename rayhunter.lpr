@@ -22,17 +22,17 @@
 
 program RayHunter;
 
-uses SysUtils, VectorMath, VRMLRayTracer, VRMLScene, VRMLTriangleOctree,
+uses SysUtils, VectorMath, RayTracer, CastleSceneCore, TriangleOctree,
   Images, CastleUtils, ProgressUnit, ProgressConsole,
-  CastleParameters, VRMLNodesDetailOptions,
-  VRMLFields, VRMLNodes, RaysWindow, CastleStringUtils, CastleWarnings,
+  CastleParameters, X3DNodesDetailOptions,
+  X3DFields, X3DNodes, RaysWindow, CastleStringUtils, CastleWarnings,
   CastleTimeUtils,
   { TODO: These are OpenGL-specific units, and we would prefer not to use
     them in rayhunter. Scene should be T3DSceneCore (not T3DScene),
     and scene manager should be... well, something not related to OpenGL.
     All this trouble is needed now to get BaseLights (containing headlight)
     from scene manager. }
-  CastleSceneManager, VRMLGLScene;
+  CastleSceneManager, CastleScene;
 
 var
   { parametry podawane w linii polecen -------------------------------------- }
@@ -194,7 +194,7 @@ const
            '                        partial result' +nl+
            '  --first-row ROWS      Assume ROWS rows were already generated and saved' +nl+
            '                        in OUT-IMAGE-FILENAME' +nl+
-           VRMLNodesDetailOptionsHelp +nl+
+           X3DNodesDetailOptionsHelp +nl+
            '  --octree-max-depth DEPTH ,' +nl+
            '  --octree-leaf-capacity CAPACITY' +nl+
            '                        Set the parameters of generated triangle octree' +nl+
@@ -233,7 +233,7 @@ var
   RenderingTime: Single;
   PathsCount, PrimaryRaysCount: Cardinal;
   OutImageClass: TImageClass;
-  RayTracer: TRayTracer;
+  MyRayTracer: TRayTracer;
   DummyGravityUp: TVector3Single;
   ModelProjectionType: TProjectionType;
   Viewpoint: TAbstractViewpointNode;
@@ -241,7 +241,7 @@ var
   SceneManager: TCastleSceneManager;
 begin
  { parsing parameters with no assigned positions }
- VRMLNodesDetailOptionsParse;
+ X3DNodesDetailOptionsParse;
  Parameters.Parse(Options, @OptionProc, nil);
  { parsing parameters with assigned positions }
  Parameters.CheckHighAtLeast(6);
@@ -267,7 +267,7 @@ begin
 
  { init some vars to nil values (to allow simple try..finally..end clause
    instead of nested try..try.. ... finally .. finally ...end) }
- scene := nil;
+ Scene := nil;
  Image := nil;
  SceneManager := nil;
 
@@ -275,10 +275,10 @@ begin
   { read scene and build SceneOctree }
   OnWarning := @OnWarningWrite;
   Write('Reading scene from file "'+ExtractFileName(sceneFilename)+'"... ');
-  scene := T3DScene.Create(nil);
-  scene.Load(SceneFilename, true);
+  Scene := T3DScene.Create(nil);
+  Scene.Load(SceneFilename, true);
   Writeln('done.');
-  Writeln(scene.Info(true, false, false));
+  Writeln(Scene.Info(true, false, false));
 
   { calculate Scene.TriangleOctree }
   Scene.TriangleOctreeLimits^.MaxDepth := OctreeMaxDepth;
@@ -292,7 +292,7 @@ begin
   SceneManager.Items.Add(Scene);
 
   { calculate CamPos/Dir/Up }
-  Viewpoint := scene.GetViewpoint(ModelProjectionType, CamPos, CamDir, CamUp, DummyGravityUp);
+  Viewpoint := Scene.GetViewpoint(ModelProjectionType, CamPos, CamDir, CamUp, DummyGravityUp);
 
   if not PerspectiveViewExplicit then
   begin
@@ -353,49 +353,49 @@ begin
     PerspectiveViewAngles[1] := AdjustViewAngleDegToAspectRatio(
       PerspectiveViewAngles[0], ImageHeight/ImageWidth);
 
-  { create RayTracer instance, set it's properties }
+  { create MyRayTracer instance, set it's properties }
   case RTKind of
     rtkClassic:
       begin
-        RayTracer := TClassicRayTracer.Create;
-        TClassicRayTracer(RayTracer).InitialDepth := RTDepth;
-        TClassicRayTracer(RayTracer).FogNode := Scene.FogNode;
-        TClassicRayTracer(RayTracer).BaseLights := SceneManager.BaseLights;
+        MyRayTracer := TClassicRayTracer.Create;
+        TClassicRayTracer(MyRayTracer).InitialDepth := RTDepth;
+        TClassicRayTracer(MyRayTracer).FogNode := Scene.FogNode;
+        TClassicRayTracer(MyRayTracer).BaseLights := SceneManager.BaseLights;
       end;
     rtkPathTracer:
       begin
-        RayTracer := TPathTracer.Create;
-        TPathTracer(RayTracer).MinDepth := RTDepth;
-        TPathTracer(RayTracer).RRoulContinue := PTRRoulContinue;
-        TPathTracer(RayTracer).PrimarySamplesCount := PTPrimarySamplesCount;
-        TPathTracer(RayTracer).NonPrimarySamplesCount := PTNonPrimarySamplesCount;
-        TPathTracer(RayTracer).DirectIllumSamplesCount := PTDirectIllumSamplesCount;
+        MyRayTracer := TPathTracer.Create;
+        TPathTracer(MyRayTracer).MinDepth := RTDepth;
+        TPathTracer(MyRayTracer).RRoulContinue := PTRRoulContinue;
+        TPathTracer(MyRayTracer).PrimarySamplesCount := PTPrimarySamplesCount;
+        TPathTracer(MyRayTracer).NonPrimarySamplesCount := PTNonPrimarySamplesCount;
+        TPathTracer(MyRayTracer).DirectIllumSamplesCount := PTDirectIllumSamplesCount;
       end;
   end;
-  RayTracer.Image := Image;
-  RayTracer.Octree := Scene.OctreeVisibleTriangles;
-  RayTracer.CamPosition := CamPos;
-  RayTracer.CamDirection := CamDir;
-  RayTracer.CamUp := CamUp;
-  RayTracer.PerspectiveView := PerspectiveView;
-  RayTracer.PerspectiveViewAngles := PerspectiveViewAngles;
-  RayTracer.OrthoViewDimensions := OrthoViewDimensions;
-  RayTracer.SceneBGColor := SceneBGColor;
-  RayTracer.PixelsMadeNotifier := @PixelsMadeNotify;
-  RayTracer.FirstPixel :=  FirstRow * Image.Width;
+  MyRayTracer.Image := Image;
+  MyRayTracer.Octree := Scene.OctreeVisibleTriangles;
+  MyRayTracer.CamPosition := CamPos;
+  MyRayTracer.CamDirection := CamDir;
+  MyRayTracer.CamUp := CamUp;
+  MyRayTracer.PerspectiveView := PerspectiveView;
+  MyRayTracer.PerspectiveViewAngles := PerspectiveViewAngles;
+  MyRayTracer.OrthoViewDimensions := OrthoViewDimensions;
+  MyRayTracer.SceneBGColor := SceneBGColor;
+  MyRayTracer.PixelsMadeNotifier := @PixelsMadeNotify;
+  MyRayTracer.FirstPixel :=  FirstRow * Image.Width;
 
   { go ! }
   Scene.OctreeVisibleTriangles.DirectCollisionTestsCounter := 0;
   ProcessTimerBegin;
   Progress.Init(ImageHeight-FirstRow, 'Rendering');
   try
-   RayTracer.Execute;
+   MyRayTracer.Execute;
   finally Progress.Fini; end;
 
   { write statistics }
   RenderingTime := ProcessTimerEnd;
 
-  FreeAndNil(RayTracer);
+  FreeAndNil(MyRayTracer);
 
   Writeln(Format(
     'Rendering done in %f seconds.' +nl+
