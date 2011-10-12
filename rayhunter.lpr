@@ -28,7 +28,7 @@ uses SysUtils, VectorMath, RayTracer, CastleSceneCore, TriangleOctree,
   X3DFields, X3DNodes, RaysWindow, CastleStringUtils, CastleWarnings,
   CastleTimeUtils,
   { TODO: These are OpenGL-specific units, and we would prefer not to use
-    them in rayhunter. Scene should be T3DSceneCore (not T3DScene),
+    them in rayhunter. Scene should be TCastleSceneCore (not TCastleScene),
     and scene manager should be... well, something not related to OpenGL.
     All this trouble is needed now to get BaseLights (containing headlight)
     from scene manager. }
@@ -78,7 +78,7 @@ var
   FirstRow: Cardinal = 0;
 
   { helper variables for doing the job --------------------------------------- }
-  Scene: T3DScene;
+  Scene: TCastleScene;
   Image: TImage;
 
 procedure PixelsMadeNotify(PixelsMadeCount: Cardinal; Data: Pointer);
@@ -275,7 +275,7 @@ begin
   { read scene and build SceneOctree }
   OnWarning := @OnWarningWrite;
   Write('Reading scene from file "'+ExtractFileName(sceneFilename)+'"... ');
-  Scene := T3DScene.Create(nil);
+  Scene := TCastleScene.Create(nil);
   Scene.Load(SceneFilename, true);
   Writeln('done.');
   Writeln(Scene.Info(true, false, false));
