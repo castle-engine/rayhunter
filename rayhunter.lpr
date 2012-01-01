@@ -434,10 +434,3 @@ begin
   FreeAndNil(SceneManager);
  end;
 end.
-
-{
-  Local Variables:
-  kam-compile-release-command-unix:    "./compile.sh && mv -fv rayhunter      ~/bin/"
-  kam-compile-release-command-windows: "./compile.sh && mv -fv rayhunter.exe c:\\\\bin\\\\"
-  End:
-}
