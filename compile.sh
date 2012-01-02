@@ -11,4 +11,4 @@ set -eu
 
 cd ../castle_game_engine/
 
-fpc -dRELEASE "${CASTLE_FPC_OPTIONS:-}" @castle-fpc.cfg ../rayhunter/rayhunter.lpr
+fpc -dRELEASE ${CASTLE_FPC_OPTIONS:-} @castle-fpc.cfg ../rayhunter/rayhunter.lpr
