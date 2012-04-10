@@ -79,7 +79,7 @@ var
 
   { helper variables for doing the job --------------------------------------- }
   Scene: TCastleScene;
-  Image: TImage;
+  Image: TCastleImage;
 
 procedure PixelsMadeNotify(PixelsMadeCount: Cardinal; Data: Pointer);
 begin
@@ -232,7 +232,7 @@ var
   { rest of helper variables }
   RenderingTime: Single;
   PathsCount, PrimaryRaysCount: Cardinal;
-  OutImageClass: TImageClass;
+  OutImageClass: TCastleImageClass;
   MyRayTracer: TRayTracer;
   DummyGravityUp: TVector3Single;
   ModelProjectionType: TProjectionType;
