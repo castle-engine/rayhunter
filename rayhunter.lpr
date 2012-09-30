@@ -330,8 +330,7 @@ begin
   { try load image from OutImageFilename if FirstRow > 0 }
   if FirstRow > 0 then
   try
-   Image := LoadImage(OutImageFilename, [OutImageClass], [],
-     ImageWidth, ImageHeight);
+   Image := LoadImage(OutImageFilename, [OutImageClass], ImageWidth, ImageHeight);
   except {silence any exception} end;
   { if not FirstRow = 0 or loading from OutImageFilename failed : init clear image }
   if Image = nil then
