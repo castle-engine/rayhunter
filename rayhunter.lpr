@@ -23,7 +23,7 @@
 program RayHunter;
 
 uses SysUtils, VectorMath, RayTracer, CastleSceneCore, TriangleOctree,
-  CastleImages, CastleUtils, ProgressUnit, ProgressConsole,
+  CastleImages, CastleUtils, CastleProgress, ProgressConsole,
   CastleParameters, X3DNodesDetailOptions,
   X3DFields, X3DNodes, RaysWindow, CastleStringUtils, CastleWarnings,
   CastleTimeUtils,
