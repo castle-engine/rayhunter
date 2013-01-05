@@ -22,10 +22,10 @@
 
 program RayHunter;
 
-uses SysUtils, CastleVectors, RayTracer, CastleSceneCore, TriangleOctree,
-  CastleImages, CastleUtils, CastleProgress, ProgressConsole,
+uses SysUtils, CastleVectors, CastleRayTracer, CastleSceneCore, CastleTriangleOctree,
+  CastleImages, CastleUtils, CastleProgress, CastleProgressConsole,
   CastleParameters, X3DNodesDetailOptions,
-  X3DFields, X3DNodes, RaysWindow, CastleStringUtils, CastleWarnings,
+  X3DFields, X3DNodes, CastleRays, CastleStringUtils, CastleWarnings,
   CastleTimeUtils,
   { TODO: These are OpenGL-specific units, and we would prefer not to use
     them in rayhunter. Scene should be TCastleSceneCore (not TCastleScene),
