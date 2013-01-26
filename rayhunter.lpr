@@ -113,7 +113,7 @@ begin
 end;
 
 const
-  Version = '1.3.3';
+  Version = '1.3.4';
   Options: array[0..15]of TOption =
   ( (Short:  #0; Long: 'scene-bg-color'; Argument: oaRequired3Separate),
     (Short: 'p'; Long: 'camera-pos'; Argument: oaRequired3Separate),
