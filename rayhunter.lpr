@@ -26,7 +26,7 @@ uses SysUtils, CastleVectors, CastleRayTracer, CastleSceneCore, CastleTriangleOc
   CastleImages, CastleUtils, CastleProgress, CastleProgressConsole,
   CastleParameters, X3DNodesDetailOptions,
   X3DFields, X3DNodes, CastleRays, CastleStringUtils, CastleWarnings,
-  CastleTimeUtils,
+  CastleTimeUtils, Classes,
   { TODO: These are OpenGL-specific units, and we would prefer not to use
     them in rayhunter. Scene should be TCastleSceneCore (not TCastleScene),
     and scene manager should be... well, something not related to OpenGL.
@@ -230,8 +230,6 @@ const
 
 var
   { rest of helper variables }
-  RenderingTime: Single;
-  PathsCount, PrimaryRaysCount: Cardinal;
   OutImageClass: TCastleImageClass;
   MyRayTracer: TRayTracer;
   DummyGravityUp: TVector3Single;
@@ -239,6 +237,7 @@ var
   Viewpoint: TAbstractViewpointNode;
   FieldOfView: TMFFloat;
   SceneManager: TCastleSceneManager;
+  Stats: TStringList;
 begin
  { parsing parameters with no assigned positions }
  X3DNodesDetailOptionsParse;
@@ -270,6 +269,8 @@ begin
  Scene := nil;
  Image := nil;
  SceneManager := nil;
+ Stats := nil;
+ MyRayTracer := nil;
 
  try
   { read scene and build SceneOctree }
@@ -384,52 +385,20 @@ begin
   MyRayTracer.FirstPixel :=  FirstRow * Image.Width;
 
   { go ! }
-  Scene.OctreeVisibleTriangles.DirectCollisionTestsCounter := 0;
-  ProcessTimerBegin;
+  Stats := TStringList.Create;
   Progress.Init(ImageHeight-FirstRow, 'Rendering');
   try
-   MyRayTracer.Execute;
+   MyRayTracer.ExecuteStats(Stats);
   finally Progress.Fini; end;
 
-  { write statistics }
-  RenderingTime := ProcessTimerEnd;
-
-  FreeAndNil(MyRayTracer);
-
-  Writeln(Format(
-    'Rendering done in %f seconds.' +nl+
-    '%d simple collision tests done (one ray tested with one triangle).',
-    [ RenderingTime,
-      Scene.OctreeVisibleTriangles.DirectCollisionTestsCounter ]));
-  case RTKind of
-   rtkClassic: begin
-      PrimaryRaysCount := Image.Width * (Image.Height-FirstRow);
-      Writeln(Format(
-        'Image size is %d x %d pixels (--first-row %d) which gives %d primary rays.' +nl+
-        '%f primary rays done per second.' +nl+
-        '%f simple collision tests done per one primary ray.',
-	[ Image.Width, Image.Height, FirstRow, PrimaryRaysCount,
-	  PrimaryRaysCount / RenderingTime,
-	  Scene.OctreeVisibleTriangles.DirectCollisionTestsCounter /  PrimaryRaysCount ]));
-     end;
-   rtkPathTracer: begin
-      PathsCount := Image.Width * (Image.Height-FirstRow) * PTPrimarySamplesCount * PTNonPrimarySamplesCount;
-      Writeln(Format(
-        'Image size is %d x %d pixels (--first-row %d) and we use %d (primary) x %d (non-primary) '+
-	'samples per pixel which gives %d paths.' +nl+
-        '%f paths done per second.' +nl+
-        '%f simple collision tests done per one path.',
-	[ Image.Width, Image.Height, FirstRow,
-	  PTPrimarySamplesCount, PTNonPrimarySamplesCount, PathsCount,
-	  PathsCount / RenderingTime,
-	  Scene.OctreeVisibleTriangles.DirectCollisionTestsCounter /  PathsCount ]));
-     end;
-  end;
+  Writeln(Stats.Text);
 
   SaveImage(Image, OutImageFilename);
  finally
-  FreeAndNil(Image);
   FreeAndNil(Scene);
+  FreeAndNil(Image);
   FreeAndNil(SceneManager);
+  FreeAndNil(Stats);
+  FreeAndNil(MyRayTracer);
  end;
 end.
