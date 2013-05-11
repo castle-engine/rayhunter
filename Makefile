@@ -6,3 +6,4 @@ compile:
 .PHONY: clean
 clean:
 	rm -f rayhunter rayhunter.exe
+	rm -Rf rayhunter.app
