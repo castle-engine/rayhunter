@@ -41,11 +41,11 @@ var
   RTKind: TRaytracerKind;
   PTNonPrimarySamplesCount: Cardinal; { meaningless if RTKind = rtkClassic }
   ImageWidth, ImageHeight: Cardinal;
-  SceneFilename, OutImageFilename: string;
+  SceneURL, OutImageURL: string;
 
   { inne parametry ktore maja jakies defaultowe wartosci i nie musza byc zawsze
     podawane }
-  { kolor tla, uzywany jesli BGImageFilename = ''. }
+  { kolor tla, uzywany jesli BGImageURL = ''. }
   SceneBGColor: TVector3Single = (0, 0, 0);
 
   CamPos: TVector3Single;
@@ -94,13 +94,13 @@ begin
     (PixelsMadeCount < ImageWidth * ImageHeight) then
  begin
   try
-   SaveImage(Image, OutImageFilename);
+   SaveImage(Image, OutImageURL);
   except
     on E: Exception do
     begin
      Writeln(ErrOutput, Format(
        'Warning: Saving partial image to "%s" failed: %s',
-       [OutImageFilename, E.Message]));
+       [OutImageURL, E.Message]));
      { In case of exception while SaveImage, write a warning
        (don't fail with error).
        Exit without writing to WritePartialRows_LogFile. }
@@ -163,10 +163,10 @@ const
            nl+
            'Usage:' +nl+
            '  rayhunter [OPTIONS]... classic DEPTH IMAGE-SIZE-X IMAGE-SIZE-Y' +nl+
-           '    SCENE-FILENAME OUT-IMAGE-FILENAME' +nl+
+           '    SCENE-URL OUT-IMAGE-URL' +nl+
            'for classic raytracer or' +nl+
            '  rayhunter [OPTIONS]... path DEPTH NON-PRIMARY-SAMPLES-COUNT' +nl+
-           '    IMAGE-SIZE-X IMAGE-SIZE-Y SCENE-FILENAME OUT-IMAGE-FILENAME' +nl+
+           '    IMAGE-SIZE-X IMAGE-SIZE-Y SCENE-URL OUT-IMAGE-URL' +nl+
            'for path tracer.' +nl+
            nl+
            'Options can be actually anywhere on the command-line, mixed between' +nl+
@@ -187,13 +187,13 @@ const
            '                        Set color emitted by scene background' +nl+
            '  --write-partial-rows ROWS LOG-ROWS-FILE' +nl+
            '                        Causes partial result to be saved to the' +nl+
-           '                        OUT-IMAGE-FILENAME after generating each ROWS rows.' +nl+
+           '                        OUT-IMAGE-URL after generating each ROWS rows.' +nl+
            '                        Additionally, in LOG-ROWS-FILE file number' +nl+
            '                        of written rows will be recorded.' +nl+
            '                        Value 0 for ROWS (default) prevents from writing' +nl+
            '                        partial result' +nl+
            '  --first-row ROWS      Assume ROWS rows were already generated and saved' +nl+
-           '                        in OUT-IMAGE-FILENAME' +nl+
+           '                        in OUT-IMAGE-URL' +nl+
            X3DNodesDetailOptionsHelp +nl+
            '  --octree-max-depth DEPTH ,' +nl+
            '  --octree-leaf-capacity CAPACITY' +nl+
@@ -258,8 +258,8 @@ begin
  end;
  ImageWidth := StrToInt(Parameters[1]); Parameters.Delete(0);
  ImageHeight := StrToInt(Parameters[1]); Parameters.Delete(0);
- SceneFilename := Parameters[1]; Parameters.Delete(0);
- OutImageFilename := Parameters[1]; Parameters.Delete(0);
+ SceneURL := Parameters[1]; Parameters.Delete(0);
+ OutImageURL := Parameters[1]; Parameters.Delete(0);
 
  { register progres showing on console }
  Progress.UserInterface := ProgressConsoleInterface;
@@ -275,9 +275,9 @@ begin
  try
   { read scene and build SceneOctree }
   OnWarning := @OnWarningWrite;
-  Write('Reading scene from file "'+ExtractFileName(sceneFilename)+'"... ');
+  Write('Reading scene from file "'+ExtractURIName(sceneURL)+'"... ');
   Scene := TCastleScene.Create(nil);
-  Scene.Load(SceneFilename, true);
+  Scene.Load(SceneURL, true);
   Writeln('done.');
   Writeln(Scene.Info(true, false, false));
 
@@ -327,13 +327,13 @@ begin
 
   { calculate Image }
   { calculate OutImageKind }
-  OutImageClass := ImageClassBestForSavingToFormat(OutImageFilename);
-  { try load image from OutImageFilename if FirstRow > 0 }
+  OutImageClass := ImageClassBestForSavingToFormat(OutImageURL);
+  { try load image from OutImageURL if FirstRow > 0 }
   if FirstRow > 0 then
   try
-   Image := LoadImage(OutImageFilename, [OutImageClass], ImageWidth, ImageHeight);
+   Image := LoadImage(OutImageURL, [OutImageClass], ImageWidth, ImageHeight);
   except {silence any exception} end;
-  { if not FirstRow = 0 or loading from OutImageFilename failed : init clear image }
+  { if not FirstRow = 0 or loading from OutImageURL failed : init clear image }
   if Image = nil then
   begin
    Image := OutImageClass.Create(ImageWidth, ImageHeight);
@@ -393,7 +393,7 @@ begin
 
   Writeln(Stats.Text);
 
-  SaveImage(Image, OutImageFilename);
+  SaveImage(Image, OutImageURL);
  finally
   FreeAndNil(Scene);
   FreeAndNil(Image);
