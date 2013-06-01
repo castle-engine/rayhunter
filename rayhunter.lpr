@@ -24,7 +24,7 @@ program RayHunter;
 
 uses SysUtils, CastleVectors, CastleRayTracer, CastleSceneCore, CastleTriangleOctree,
   CastleImages, CastleUtils, CastleProgress, CastleProgressConsole,
-  CastleParameters, X3DNodesDetailOptions,
+  CastleParameters, X3DNodesDetailOptions, CastleURIUtils,
   X3DFields, X3DNodes, CastleRays, CastleStringUtils, CastleWarnings,
   CastleTimeUtils, Classes,
   { TODO: These are OpenGL-specific units, and we would prefer not to use
