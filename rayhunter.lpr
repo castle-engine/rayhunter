@@ -275,7 +275,7 @@ begin
  try
   { read scene and build SceneOctree }
   OnWarning := @OnWarningWrite;
-  Write('Reading scene from file "'+ExtractURIName(sceneURL)+'"... ');
+  Write('Reading scene from file "'+URICaption(sceneURL)+'"... ');
   Scene := TCastleScene.Create(nil);
   Scene.Load(SceneURL, true);
   Writeln('done.');
