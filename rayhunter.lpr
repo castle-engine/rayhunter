@@ -209,11 +209,11 @@ const
               '                        Set primary samples count (default 1)' +nl+
               nl+
               SCastleEngineProgramHelpSuffix('rayhunter', Version, true));
-            ProgramBreak;
+            Halt;
           end;
       14: begin
             Writeln(Version);
-            ProgramBreak;
+            Halt;
           end;
       15 :begin
             Projection.ProjectionType := ptOrthographic;
