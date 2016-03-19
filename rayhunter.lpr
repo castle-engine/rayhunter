@@ -65,9 +65,6 @@ var
     stated by command-line parameter. }
   ProjectionTypeExplicit: boolean = false;
 
-  OctreeMaxDepth: integer = DefTriangleOctreeMaxDepth;
-  OctreeLeafCapacity: integer = DefTriangleOctreeLeafCapacity;
-
   WritePartialRows: Cardinal = 0;
   WritePartialRows_LogFile: string = '';
 
@@ -113,15 +110,13 @@ end;
 
 const
   Version = '1.3.4';
-  Options: array[0..15]of TOption =
+  Options: array [0..13] of TOption =
   ( (Short:  #0; Long: 'scene-bg-color'; Argument: oaRequired3Separate),
     (Short: 'p'; Long: 'camera-pos'; Argument: oaRequired3Separate),
     (Short: 'd'; Long: 'camera-dir'; Argument: oaRequired3Separate),
     (Short: 'u'; Long: 'camera-up'; Argument: oaRequired3Separate),
     (Short:  #0; Long: 'view-angle-x'; Argument: oaRequired),
     (Short:  #0; Long: 'force-view-angle-y'; Argument: oaRequired),
-    (Short:  #0; Long: 'octree-max-depth'; Argument: oaRequired),
-    (Short:  #0; Long: 'octree-leaf-capacity'; Argument: oaRequired),
     (Short:  #0; Long: 'write-partial-rows'; Argument: oaRequired2Separate),
     (Short:  #0; Long: 'direct-illum-samples-count'; Argument: oaRequired),
     (Short:  #0; Long: 'r-roul-continue'; Argument: oaRequired),
@@ -142,17 +137,15 @@ const
       3 : begin Param_CamUp := SeparateArgsToVector3Single(SeparateArgs); WasParam_CamUp := true end;
       4 : begin ProjectionTypeExplicit := true; Projection.ProjectionType := ptPerspective; Projection.PerspectiveAngles[0] := StrToFloat(Argument); end;
       5 : begin ProjectionTypeExplicit := true; Projection.ProjectionType := ptPerspective; Projection.PerspectiveAngles[1] := StrToFloat(Argument); end;
-      6 : OctreeMaxDepth := StrToInt(Argument);
-      7 : OctreeLeafCapacity := StrToInt(Argument);
-      8 : begin
+      6 : begin
             WritePartialRows := StrToInt(SeparateArgs[1]);
             WritePartialRows_LogFile := SeparateArgs[2];
           end;
-      9 : PTDirectIllumSamplesCount := StrToInt(Argument);
-      10: PTRRoulContinue := StrToFloat(Argument);
-      11: PTPrimarySamplesCount := StrToInt(Argument);
-      12: FirstRow := StrToInt(Argument);
-      13: begin
+      7 : PTDirectIllumSamplesCount := StrToInt(Argument);
+      8 : PTRRoulContinue := StrToFloat(Argument);
+      9 : PTPrimarySamplesCount := StrToInt(Argument);
+      10: FirstRow := StrToInt(Argument);
+      11: begin
             InfoWrite(
              {'0123456789012345678901234567890123456789012345678901234567890123456789012345' }
               'RayHunter: ray-tracer for VRML / X3D (and others, like  3DS) models.' +nl+
@@ -194,9 +187,6 @@ const
               '  --first-row ROWS      Assume ROWS rows were already generated and saved' +nl+
               '                        in OUT-IMAGE-URL' +nl+
               X3DNodesDetailOptionsHelp +nl+
-              '  --octree-max-depth DEPTH ,' +nl+
-              '  --octree-leaf-capacity CAPACITY' +nl+
-              '                        Set the parameters of generated triangle octree' +nl+
               nl+
               'Options meaningfull only for path tracer (ignored if supplied for classic' +nl+
               'raytracer):' +nl+
@@ -211,11 +201,11 @@ const
               SCastleEngineProgramHelpSuffix('rayhunter', Version, true));
             Halt;
           end;
-      14: begin
+      12: begin
             Writeln(Version);
             Halt;
           end;
-      15 :begin
+      13 :begin
             Projection.ProjectionType := ptOrthographic;
             ProjectionTypeExplicit := true;
             Projection.OrthoDimensions[0] := StrToFloat(SeparateArgs[1]);
@@ -286,8 +276,6 @@ begin
     Writeln(Scene.Info(true, false, false));
 
     { calculate Scene.TriangleOctree }
-    Scene.TriangleOctreeLimits^.MaxDepth := OctreeMaxDepth;
-    Scene.TriangleOctreeLimits^.LeafCapacity := OctreeLeafCapacity;
     Scene.TriangleOctreeProgressTitle := 'Building octree';
     Scene.Spatial := [ssVisibleTriangles];
 
@@ -377,7 +365,7 @@ begin
         end;
     end;
     MyRayTracer.Image := Image;
-    MyRayTracer.Octree := Scene.OctreeVisibleTriangles;
+    MyRayTracer.Octree := Scene.InternalOctreeVisibleTriangles;
     MyRayTracer.CamPosition := CamPos;
     MyRayTracer.CamDirection := CamDir;
     MyRayTracer.CamUp := CamUp;
