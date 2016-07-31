@@ -25,7 +25,7 @@ program RayHunter;
 uses SysUtils, CastleVectors, CastleRayTracer, CastleSceneCore, CastleTriangleOctree,
   CastleImages, CastleUtils, CastleProgress, CastleProgressConsole,
   CastleParameters, X3DNodesDetailOptions, CastleURIUtils,
-  X3DFields, X3DNodes, CastleRays, CastleStringUtils, CastleWarnings,
+  X3DFields, X3DNodes, CastleRays, CastleStringUtils, CastleApplicationProperties,
   CastleTimeUtils, Classes,
   { TODO: These are OpenGL-specific units, and we would prefer not to use
     them in rayhunter. Scene should be TCastleSceneCore (not TCastleScene),
@@ -268,7 +268,7 @@ begin
 
   try
     { read scene and build SceneOctree }
-    OnWarning := @OnWarningWrite;
+    ApplicationProperties.OnWarning.Add(@ApplicationProperties.WriteWarningOnConsole);
     Write('Reading scene from file "'+URICaption(sceneURL)+'"... ');
     Scene := TCastleScene.Create(nil);
     Scene.Load(SceneURL, true);
