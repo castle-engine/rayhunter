@@ -15,7 +15,7 @@
 
   You should have received a copy of the GNU General Public License
   along with "rayhunter"; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
   ----------------------------------------------------------------------------
 }
@@ -24,7 +24,7 @@ program RayHunter;
 
 uses SysUtils, CastleVectors, CastleRayTracer, CastleSceneCore, CastleTriangleOctree,
   CastleImages, CastleUtils, CastleProgress, CastleProgressConsole,
-  CastleParameters, X3DNodesDetailOptions, CastleURIUtils,
+  CastleParameters, CastleURIUtils,
   X3DFields, X3DNodes, CastleRays, CastleStringUtils, CastleApplicationProperties,
   CastleTimeUtils, Classes,
   { TODO: These are OpenGL-specific units, and we would prefer not to use
@@ -186,7 +186,6 @@ const
               '                        partial result' +nl+
               '  --first-row ROWS      Assume ROWS rows were already generated and saved' +nl+
               '                        in OUT-IMAGE-URL' +nl+
-              X3DNodesDetailOptionsHelp +nl+
               nl+
               'Options meaningfull only for path tracer (ignored if supplied for classic' +nl+
               'raytracer):' +nl+
@@ -234,7 +233,6 @@ begin
   Projection.OrthoDimensions := Vector4Single(-1, -1, 1, 1);
 
   { parsing parameters with no assigned positions }
-  X3DNodesDetailOptionsParse;
   Parameters.Parse(Options, @OptionProc, nil);
   { parsing parameters with assigned positions }
   Parameters.CheckHighAtLeast(6);
@@ -273,7 +271,9 @@ begin
     Scene := TCastleScene.Create(nil);
     Scene.Load(SceneURL, true);
     Writeln('done.');
-    Writeln(Scene.Info(true, false, false));
+    Writeln(Format('Scene contains %d triangles and %d vertices.',
+      [Scene.TrianglesCount(false),
+       Scene.VerticesCount(false)]));
 
     { calculate Scene.TriangleOctree }
     Scene.TriangleOctreeProgressTitle := 'Building octree';
