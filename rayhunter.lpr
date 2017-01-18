@@ -22,7 +22,7 @@
 
 program RayHunter;
 
-uses SysUtils, CastleVectors, CastleRayTracer, CastleSceneCore, CastleTriangleOctree,
+uses SysUtils, CastleVectors, CastleRayTracer, CastleSceneCore,
   CastleImages, CastleUtils, CastleProgress, CastleProgressConsole,
   CastleParameters, CastleURIUtils,
   X3DFields, X3DNodes, CastleRays, CastleStringUtils, CastleApplicationProperties,
