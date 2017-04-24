@@ -43,9 +43,7 @@ var
   ImageWidth, ImageHeight: Cardinal;
   SceneURL, OutImageURL: string;
 
-  { inne parametry ktore maja jakies defaultowe wartosci i nie musza byc zawsze
-    podawane }
-  { kolor tla, uzywany jesli BGImageURL = ''. }
+  { default background color, in case scene doesn't have Background.skyColor }
   SceneBGColor: TVector3Single = (0, 0, 0);
 
   CamPos: TVector3Single;
@@ -371,6 +369,7 @@ begin
     MyRayTracer.CamUp := CamUp;
     MyRayTracer.Projection := Projection;
     MyRayTracer.SceneBGColor := SceneBGColor;
+    MyRayTracer.Background := Scene.BackgroundStack.Top;
     MyRayTracer.PixelsMadeNotifier := @PixelsMadeNotify;
     MyRayTracer.FirstPixel :=  FirstRow * Image.Width;
 
