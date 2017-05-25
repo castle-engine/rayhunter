@@ -205,10 +205,10 @@ const
       13 :begin
             Projection.ProjectionType := ptOrthographic;
             ProjectionTypeExplicit := true;
-            Projection.OrthoDimensions.Left   := StrToFloat(SeparateArgs[1]);
-            Projection.OrthoDimensions.Bottom := StrToFloat(SeparateArgs[2]);
-            Projection.OrthoDimensions.Width  := StrToFloat(SeparateArgs[3]) - Projection.OrthoDimensions.Left;
-            Projection.OrthoDimensions.Height := StrToFloat(SeparateArgs[4]) - Projection.OrthoDimensions.Bottom;
+            Projection.Dimensions.Left   := StrToFloat(SeparateArgs[1]);
+            Projection.Dimensions.Bottom := StrToFloat(SeparateArgs[2]);
+            Projection.Dimensions.Width  := StrToFloat(SeparateArgs[3]) - Projection.Dimensions.Left;
+            Projection.Dimensions.Height := StrToFloat(SeparateArgs[4]) - Projection.Dimensions.Bottom;
           end;
       else raise EInternalError.Create('OptionProc');
     end;
@@ -228,7 +228,7 @@ begin
   { defaults for Projection }
   Projection.ProjectionType := ptPerspective;
   Projection.PerspectiveAngles := Vector2Single(60, 0);
-  Projection.OrthoDimensions := FloatRectangle(-1, -1, 2, 2);
+  Projection.Dimensions := FloatRectangle(-1, -1, 2, 2);
 
   { parsing parameters with no assigned positions }
   Parameters.Parse(Options, @OptionProc, nil);
@@ -296,18 +296,18 @@ begin
         { So we know that user didn't also explicitly specify ortho dimensions.
           So use the ones from viewpoint. }
         FieldOfView := TOrthoViewpointNode(Viewpoint).FdFieldOfView;
-        if FieldOfView.Count > 0 then Projection.OrthoDimensions.Left   := FieldOfView.Items[0];
-        if FieldOfView.Count > 1 then Projection.OrthoDimensions.Bottom := FieldOfView.Items[1];
-        if FieldOfView.Count > 2 then Projection.OrthoDimensions.Width  := FieldOfView.Items[2] - Projection.OrthoDimensions.Left;
-        if FieldOfView.Count > 3 then Projection.OrthoDimensions.Height := FieldOfView.Items[3] - Projection.OrthoDimensions.Bottom;
+        if FieldOfView.Count > 0 then Projection.Dimensions.Left   := FieldOfView.Items[0];
+        if FieldOfView.Count > 1 then Projection.Dimensions.Bottom := FieldOfView.Items[1];
+        if FieldOfView.Count > 2 then Projection.Dimensions.Width  := FieldOfView.Items[2] - Projection.Dimensions.Left;
+        if FieldOfView.Count > 3 then Projection.Dimensions.Height := FieldOfView.Items[3] - Projection.Dimensions.Bottom;
       end else
       if (Viewpoint <> nil) and
          (Viewpoint is TOrthographicCameraNode_1) then
       begin
-        Projection.OrthoDimensions.Left   := -TOrthographicCameraNode_1(Viewpoint).FdHeight.Value / 2;
-        Projection.OrthoDimensions.Bottom := -TOrthographicCameraNode_1(Viewpoint).FdHeight.Value / 2;
-        Projection.OrthoDimensions.Width  :=  TOrthographicCameraNode_1(Viewpoint).FdHeight.Value;
-        Projection.OrthoDimensions.Height :=  TOrthographicCameraNode_1(Viewpoint).FdHeight.Value;
+        Projection.Dimensions.Left   := -TOrthographicCameraNode_1(Viewpoint).FdHeight.Value / 2;
+        Projection.Dimensions.Bottom := -TOrthographicCameraNode_1(Viewpoint).FdHeight.Value / 2;
+        Projection.Dimensions.Width  :=  TOrthographicCameraNode_1(Viewpoint).FdHeight.Value;
+        Projection.Dimensions.Height :=  TOrthographicCameraNode_1(Viewpoint).FdHeight.Value;
       end;
     end;
 
