@@ -24,7 +24,7 @@ program RayHunter;
 
 uses SysUtils, CastleVectors, CastleRayTracer, CastleSceneCore,
   CastleImages, CastleUtils, CastleProgress, CastleProgressConsole,
-  CastleParameters, CastleURIUtils,
+  CastleParameters, CastleURIUtils, CastleProjection, CastleRectangles,
   X3DFields, X3DNodes, CastleRays, CastleStringUtils, CastleApplicationProperties,
   CastleTimeUtils, Classes,
   { TODO: These are OpenGL-specific units, and we would prefer not to use
@@ -205,10 +205,10 @@ const
       13 :begin
             Projection.ProjectionType := ptOrthographic;
             ProjectionTypeExplicit := true;
-            Projection.OrthoDimensions[0] := StrToFloat(SeparateArgs[1]);
-            Projection.OrthoDimensions[1] := StrToFloat(SeparateArgs[2]);
-            Projection.OrthoDimensions[2] := StrToFloat(SeparateArgs[3]);
-            Projection.OrthoDimensions[3] := StrToFloat(SeparateArgs[4]);
+            Projection.OrthoDimensions.Left   := StrToFloat(SeparateArgs[1]);
+            Projection.OrthoDimensions.Bottom := StrToFloat(SeparateArgs[2]);
+            Projection.OrthoDimensions.Width  := StrToFloat(SeparateArgs[3]) - Projection.OrthoDimensions.Left;
+            Projection.OrthoDimensions.Height := StrToFloat(SeparateArgs[4]) - Projection.OrthoDimensions.Bottom;
           end;
       else raise EInternalError.Create('OptionProc');
     end;
@@ -228,7 +228,7 @@ begin
   { defaults for Projection }
   Projection.ProjectionType := ptPerspective;
   Projection.PerspectiveAngles := Vector2Single(60, 0);
-  Projection.OrthoDimensions := Vector4Single(-1, -1, 1, 1);
+  Projection.OrthoDimensions := FloatRectangle(-1, -1, 2, 2);
 
   { parsing parameters with no assigned positions }
   Parameters.Parse(Options, @OptionProc, nil);
@@ -296,18 +296,18 @@ begin
         { So we know that user didn't also explicitly specify ortho dimensions.
           So use the ones from viewpoint. }
         FieldOfView := TOrthoViewpointNode(Viewpoint).FdFieldOfView;
-        if FieldOfView.Count > 0 then Projection.OrthoDimensions[0] := FieldOfView.Items[0];
-        if FieldOfView.Count > 1 then Projection.OrthoDimensions[1] := FieldOfView.Items[1];
-        if FieldOfView.Count > 2 then Projection.OrthoDimensions[2] := FieldOfView.Items[2];
-        if FieldOfView.Count > 3 then Projection.OrthoDimensions[3] := FieldOfView.Items[3];
+        if FieldOfView.Count > 0 then Projection.OrthoDimensions.Left   := FieldOfView.Items[0];
+        if FieldOfView.Count > 1 then Projection.OrthoDimensions.Bottom := FieldOfView.Items[1];
+        if FieldOfView.Count > 2 then Projection.OrthoDimensions.Width  := FieldOfView.Items[2] - Projection.OrthoDimensions.Left;
+        if FieldOfView.Count > 3 then Projection.OrthoDimensions.Height := FieldOfView.Items[3] - Projection.OrthoDimensions.Bottom;
       end else
       if (Viewpoint <> nil) and
          (Viewpoint is TOrthographicCameraNode_1) then
       begin
-        Projection.OrthoDimensions[0] := -TOrthographicCameraNode_1(Viewpoint).FdHeight.Value / 2;
-        Projection.OrthoDimensions[1] := -TOrthographicCameraNode_1(Viewpoint).FdHeight.Value / 2;
-        Projection.OrthoDimensions[2] :=  TOrthographicCameraNode_1(Viewpoint).FdHeight.Value / 2;
-        Projection.OrthoDimensions[3] :=  TOrthographicCameraNode_1(Viewpoint).FdHeight.Value / 2;
+        Projection.OrthoDimensions.Left   := -TOrthographicCameraNode_1(Viewpoint).FdHeight.Value / 2;
+        Projection.OrthoDimensions.Bottom := -TOrthographicCameraNode_1(Viewpoint).FdHeight.Value / 2;
+        Projection.OrthoDimensions.Width  :=  TOrthographicCameraNode_1(Viewpoint).FdHeight.Value;
+        Projection.OrthoDimensions.Height :=  TOrthographicCameraNode_1(Viewpoint).FdHeight.Value;
       end;
     end;
 
