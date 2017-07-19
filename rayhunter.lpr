@@ -44,14 +44,14 @@ var
   SceneURL, OutImageURL: string;
 
   { default background color, in case scene doesn't have Background.skyColor }
-  SceneBGColor: TVector3Single = (0, 0, 0);
+  SceneBGColor: TVector3 = (Data: (0, 0, 0));
 
-  CamPos: TVector3Single;
-  CamDir: TVector3Single;
-  CamUp: TVector3Single;
-  Param_CamPos: TVector3Single;
-  Param_CamDir: TVector3Single;
-  Param_CamUp: TVector3Single;
+  CamPos: TVector3;
+  CamDir: TVector3;
+  CamUp: TVector3;
+  Param_CamPos: TVector3;
+  Param_CamDir: TVector3;
+  Param_CamUp: TVector3;
   WasParam_CamPos: boolean = false;
   WasParam_CamDir: boolean = false;
   WasParam_CamUp: boolean = false;
@@ -129,10 +129,10 @@ const
     const Argument: string; const SeparateArgs: TSeparateArgs; Data: Pointer);
   begin
     case OptionNum of
-      0 : SceneBGColor := SeparateArgsToVector3Single(SeparateArgs);
-      1 : begin Param_CamPos := SeparateArgsToVector3Single(SeparateArgs); WasParam_CamPos := true end;
-      2 : begin Param_CamDir := SeparateArgsToVector3Single(SeparateArgs); WasParam_CamDir := true end;
-      3 : begin Param_CamUp := SeparateArgsToVector3Single(SeparateArgs); WasParam_CamUp := true end;
+      0 : SceneBGColor := SeparateArgsToVector3(SeparateArgs);
+      1 : begin Param_CamPos := SeparateArgsToVector3(SeparateArgs); WasParam_CamPos := true end;
+      2 : begin Param_CamDir := SeparateArgsToVector3(SeparateArgs); WasParam_CamDir := true end;
+      3 : begin Param_CamUp := SeparateArgsToVector3(SeparateArgs); WasParam_CamUp := true end;
       4 : begin ProjectionTypeExplicit := true; Projection.ProjectionType := ptPerspective; Projection.PerspectiveAngles[0] := StrToFloat(Argument); end;
       5 : begin ProjectionTypeExplicit := true; Projection.ProjectionType := ptPerspective; Projection.PerspectiveAngles[1] := StrToFloat(Argument); end;
       6 : begin
@@ -218,7 +218,7 @@ var
   { rest of helper variables }
   OutImageClass: TCastleImageClass;
   MyRayTracer: TRayTracer;
-  DummyGravityUp: TVector3Single;
+  DummyGravityUp: TVector3;
   ModelProjectionType: TProjectionType;
   Viewpoint: TAbstractViewpointNode;
   FieldOfView: TMFFloat;
@@ -227,7 +227,7 @@ var
 begin
   { defaults for Projection }
   Projection.ProjectionType := ptPerspective;
-  Projection.PerspectiveAngles := Vector2Single(60, 0);
+  Projection.PerspectiveAngles := Vector2(60, 0);
   Projection.Dimensions := FloatRectangle(-1, -1, 2, 2);
 
   { parsing parameters with no assigned positions }
@@ -334,7 +334,7 @@ begin
       if Image is TRGBFloatImage then
         TRGBFloatImage(Image).Clear(SceneBGColor) else
       if Image is TRGBImage then
-        Image.Clear(Vector4Byte(Vector4Single(SceneBGColor, 0))) else
+        Image.Clear(Vector4Byte(Vector4(SceneBGColor, 0))) else
         raise EInternalError.Create('inv OutImageClass');
     end;
 
