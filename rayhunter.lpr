@@ -26,7 +26,7 @@ uses SysUtils, CastleVectors, CastleRayTracer, CastleSceneCore,
   CastleImages, CastleUtils, CastleProgress, CastleProgressConsole,
   CastleParameters, CastleURIUtils, CastleProjection, CastleRectangles,
   X3DFields, X3DNodes, CastleRays, CastleStringUtils, CastleApplicationProperties,
-  CastleTimeUtils, Classes,
+  CastleTimeUtils, CastleFilesUtils, Classes,
   { TODO: These are OpenGL-specific units, and we would prefer not to use
     them in rayhunter. Scene should be TCastleSceneCore (not TCastleScene),
     and scene manager should be... well, something not related to OpenGL.
