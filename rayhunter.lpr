@@ -106,6 +106,15 @@ begin
   end;
 end;
 
+function LightsForRaytracer(const SceneManager: TCastleSceneManager): TLightInstancesList;
+var
+  HI: TLightInstance;
+begin
+  Result := TLightInstancesList.Create;
+  if SceneManager.HeadlightInstance(HI) then
+    Result.Add(HI);
+end;
+
 const
   Version = '1.3.4';
   Options: array [0..13] of TOption =
@@ -277,7 +286,7 @@ begin
     Scene.TriangleOctreeProgressTitle := 'Building octree';
     Scene.Spatial := [ssVisibleTriangles];
 
-    { calculate SceneManager (will be used for headlight in BaseLights) }
+    { calculate SceneManager (will be used for headlight in LightsForRaytracer) }
     SceneManager := TCastleSceneManager.Create(nil);
     SceneManager.MainScene := Scene;
     SceneManager.Items.Add(Scene);
@@ -350,7 +359,8 @@ begin
           MyRayTracer := TClassicRayTracer.Create;
           TClassicRayTracer(MyRayTracer).InitialDepth := RTDepth;
           TClassicRayTracer(MyRayTracer).FogNode := Scene.FogStack.Top;
-          TClassicRayTracer(MyRayTracer).BaseLights := SceneManager.BaseLights;
+          TClassicRayTracer(MyRayTracer).BaseLights := LightsForRaytracer(SceneManager);
+          TClassicRayTracer(MyRayTracer).OwnsBaseLights := true;
         end;
       rtkPathTracer:
         begin
