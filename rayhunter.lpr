@@ -22,16 +22,21 @@
 
 program RayHunter;
 
-uses SysUtils, CastleVectors, CastleRayTracer, CastleSceneCore,
+uses SysUtils, Classes,
+  CastleVectors, CastleRayTracer, CastleSceneCore,
   CastleImages, CastleUtils, CastleProgress, CastleProgressConsole,
   CastleParameters, CastleURIUtils, CastleProjection, CastleRectangles,
   X3DFields, X3DNodes, CastleRays, CastleStringUtils, CastleApplicationProperties,
-  CastleTimeUtils, CastleFilesUtils, Classes,
-  { TODO: These are OpenGL-specific units, and we would prefer not to use
-    them in rayhunter. Scene should be TCastleSceneCore (not TCastleScene),
-    and scene manager should be... well, something not related to OpenGL.
-    All this trouble is needed now to get BaseLights (containing headlight)
-    from scene manager. }
+  CastleTimeUtils, CastleFilesUtils, CastleLog,
+
+  { TODO: CastleSceneManager and CastleScene use OpenGL,
+    and we would prefer rayhunter to not depend on OpenGL
+    (since it is a CPU renderer, a clean code should not depend on any OpenGL units,
+    even indirectly).
+
+    Some day, when we will make the renderer architecture "pluggable",
+    then base TCastleScene and TCastleSceneManager will not be depending
+    on OpenGL, making this problem moot. }
   CastleSceneManager, CastleScene;
 
 var
