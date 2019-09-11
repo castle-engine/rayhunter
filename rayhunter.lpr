@@ -331,7 +331,13 @@ begin
     if FirstRow > 0 then
     try
       Image := LoadImage(OutImageURL, [OutImageClass], ImageWidth, ImageHeight);
-    except {silence any exception} end;
+    except
+      on E: TObject do
+        WritelnLog('Failed to load image "%s": %s, starting new rendering', [
+          URIDisplay(OutImageURL),
+          ExceptMessage(E)
+        ]);
+    end;
     { if not FirstRow = 0 or loading from OutImageURL failed : init clear image }
     if Image = nil then
     begin
