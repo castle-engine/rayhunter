@@ -22,22 +22,22 @@
 
 program RayHunter;
 
-uses SysUtils, Classes,
+uses SysUtils, Classes, Math,
   CastleVectors, CastleRayTracer, CastleSceneCore,
   CastleImages, CastleUtils, CastleProgress, CastleProgressConsole,
   CastleParameters, CastleURIUtils, CastleProjection, CastleRectangles,
   X3DFields, X3DNodes, CastleRays, CastleStringUtils, CastleApplicationProperties,
   CastleTimeUtils, CastleFilesUtils, CastleLog,
 
-  { TODO: CastleSceneManager and CastleScene use OpenGL,
+  { TODO: CastleViewport and CastleScene use OpenGL,
     and we would prefer rayhunter to not depend on OpenGL
     (since it is a CPU renderer, a clean code should not depend on any OpenGL units,
     even indirectly).
 
     Some day, when we will make the renderer architecture "pluggable",
-    then base TCastleScene and TCastleSceneManager will not be depending
+    then base TCastleScene and TCastleViewport will not be depending
     on OpenGL, making this problem moot. }
-  CastleSceneManager, CastleScene;
+  CastleViewport, CastleScene;
 
 var
   { parametry podawane w linii polecen -------------------------------------- }
@@ -61,7 +61,7 @@ var
   WasParam_CamDir: boolean = false;
   WasParam_CamUp: boolean = false;
 
-  { Note: Projection.PerspectiveAngles[1] = 0 means "unspecified",
+  { Note: Projection.PerspectiveAnglesRad[1] = 0 means "unspecified",
     will be adjusted to image dims }
   Projection: TProjection;
   { Was Projection.ProjectionView value explicitly
@@ -111,12 +111,12 @@ begin
   end;
 end;
 
-function LightsForRaytracer(const SceneManager: TCastleSceneManager): TLightInstancesList;
+function LightsForRaytracer(const Viewport: TCastleViewport): TLightInstancesList;
 var
   HI: TLightInstance;
 begin
   Result := TLightInstancesList.Create;
-  if SceneManager.HeadlightInstance(HI) then
+  if Viewport.HeadlightInstance(HI) then
     Result.Add(HI);
 end;
 
@@ -147,8 +147,8 @@ const
       1 : begin Param_CamPos := SeparateArgsToVector3(SeparateArgs); WasParam_CamPos := true end;
       2 : begin Param_CamDir := SeparateArgsToVector3(SeparateArgs); WasParam_CamDir := true end;
       3 : begin Param_CamUp := SeparateArgsToVector3(SeparateArgs); WasParam_CamUp := true end;
-      4 : begin ProjectionTypeExplicit := true; Projection.ProjectionType := ptPerspective; Projection.PerspectiveAngles[0] := StrToFloat(Argument); end;
-      5 : begin ProjectionTypeExplicit := true; Projection.ProjectionType := ptPerspective; Projection.PerspectiveAngles[1] := StrToFloat(Argument); end;
+      4 : begin ProjectionTypeExplicit := true; Projection.ProjectionType := ptPerspective; Projection.PerspectiveAnglesRad[0] := DegToRad(StrToFloat(Argument)); end;
+      5 : begin ProjectionTypeExplicit := true; Projection.ProjectionType := ptPerspective; Projection.PerspectiveAnglesRad[1] := DegToRad(StrToFloat(Argument)); end;
       6 : begin
             WritePartialRows := StrToInt(SeparateArgs[1]);
             WritePartialRows_LogFile := SeparateArgs[2];
@@ -236,12 +236,12 @@ var
   ModelProjectionType: TProjectionType;
   Viewpoint: TAbstractViewpointNode;
   FieldOfView: TMFFloat;
-  SceneManager: TCastleSceneManager;
+  Viewport: TCastleViewport;
   Stats: TStringList;
 begin
   { defaults for Projection }
   Projection.ProjectionType := ptPerspective;
-  Projection.PerspectiveAngles := Vector2(60, 0);
+  Projection.PerspectiveAnglesRad := Vector2(DegToRad(60), 0);
   Projection.Dimensions := FloatRectangle(-1, -1, 2, 2);
 
   { parsing parameters with no assigned positions }
@@ -272,7 +272,7 @@ begin
     instead of nested try..try.. ... finally .. finally ...end) }
   Scene := nil;
   Image := nil;
-  SceneManager := nil;
+  Viewport := nil;
   Stats := nil;
   MyRayTracer := nil;
 
@@ -281,7 +281,7 @@ begin
     ApplicationProperties.OnWarning.Add(@ApplicationProperties.WriteWarningOnConsole);
     Write('Reading scene from file "'+URICaption(sceneURL)+'"... ');
     Scene := TCastleScene.Create(nil);
-    Scene.Load(SceneURL, true);
+    Scene.Load(SceneURL);
     Writeln('done.');
     Writeln(Format('Scene contains %d triangles and %d vertices.',
       [Scene.TrianglesCount(false),
@@ -291,10 +291,10 @@ begin
     Scene.TriangleOctreeProgressTitle := 'Building octree';
     Scene.Spatial := [ssVisibleTriangles];
 
-    { calculate SceneManager (will be used for headlight in LightsForRaytracer) }
-    SceneManager := TCastleSceneManager.Create(nil);
-    SceneManager.MainScene := Scene;
-    SceneManager.Items.Add(Scene);
+    { calculate Viewport (will be used for headlight in LightsForRaytracer) }
+    Viewport := TCastleViewport.Create(nil);
+    Viewport.Items.MainScene := Scene;
+    Viewport.Items.Add(Scene);
 
     { calculate CamPos/Dir/Up }
     Viewpoint := Scene.GetViewpoint(ModelProjectionType, CamPos, CamDir, CamUp, DummyGravityUp);
@@ -359,9 +359,9 @@ begin
     end;
 
     { init ViewAngleY }
-    if Projection.PerspectiveAngles[1] = 0.0 then
-      Projection.PerspectiveAngles[1] := AdjustViewAngleDegToAspectRatio(
-        Projection.PerspectiveAngles[0], ImageHeight/ImageWidth);
+    if Projection.PerspectiveAnglesRad[1] = 0.0 then
+      Projection.PerspectiveAnglesRad[1] := AdjustViewAngleRadToAspectRatio(
+        Projection.PerspectiveAnglesRad[0], ImageHeight/ImageWidth);
 
     { create MyRayTracer instance, set it's properties }
     case RTKind of
@@ -370,7 +370,7 @@ begin
           MyRayTracer := TClassicRayTracer.Create;
           TClassicRayTracer(MyRayTracer).InitialDepth := RTDepth;
           TClassicRayTracer(MyRayTracer).FogNode := Scene.FogStack.Top;
-          TClassicRayTracer(MyRayTracer).BaseLights := LightsForRaytracer(SceneManager);
+          TClassicRayTracer(MyRayTracer).BaseLights := LightsForRaytracer(Viewport);
           TClassicRayTracer(MyRayTracer).OwnsBaseLights := true;
         end;
       rtkPathTracer:
@@ -407,7 +407,7 @@ begin
   finally
     FreeAndNil(Scene);
     FreeAndNil(Image);
-    FreeAndNil(SceneManager);
+    FreeAndNil(Viewport);
     FreeAndNil(Stats);
     FreeAndNil(MyRayTracer);
   end;
