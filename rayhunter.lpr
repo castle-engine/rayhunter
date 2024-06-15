@@ -61,7 +61,7 @@ var
   WasParam_CamDir: boolean = false;
   WasParam_CamUp: boolean = false;
 
-  { Note: Projection.PerspectiveAnglesRad[1] = 0 means "unspecified",
+  { Note: Projection.PerspectiveAnglesRad.Y = 0 means "unspecified",
     will be adjusted to image dims }
   Projection: TProjection;
   { Was Projection.ProjectionView value explicitly
@@ -146,8 +146,8 @@ const
       1 : begin Param_CamPos := SeparateArgsToVector3(SeparateArgs); WasParam_CamPos := true end;
       2 : begin Param_CamDir := SeparateArgsToVector3(SeparateArgs); WasParam_CamDir := true end;
       3 : begin Param_CamUp := SeparateArgsToVector3(SeparateArgs); WasParam_CamUp := true end;
-      4 : begin ProjectionTypeExplicit := true; Projection.ProjectionType := ptPerspective; Projection.PerspectiveAnglesRad[0] := DegToRad(StrToFloat(Argument)); end;
-      5 : begin ProjectionTypeExplicit := true; Projection.ProjectionType := ptPerspective; Projection.PerspectiveAnglesRad[1] := DegToRad(StrToFloat(Argument)); end;
+      4 : begin ProjectionTypeExplicit := true; Projection.ProjectionType := ptPerspective; Projection.PerspectiveAnglesRad.X := DegToRad(StrToFloat(Argument)); end;
+      5 : begin ProjectionTypeExplicit := true; Projection.ProjectionType := ptPerspective; Projection.PerspectiveAnglesRad.Y := DegToRad(StrToFloat(Argument)); end;
       6 : begin
             WritePartialRows := StrToInt(SeparateArgs[1]);
             WritePartialRows_LogFile := SeparateArgs[2];
@@ -353,10 +353,10 @@ begin
         raise EInternalError.Create('inv OutImageClass');
     end;
 
-    { init ViewAngleY }
-    if Projection.PerspectiveAnglesRad[1] = 0.0 then
-      Projection.PerspectiveAnglesRad[1] := AdjustViewAngleRadToAspectRatio(
-        Projection.PerspectiveAnglesRad[0], ImageHeight/ImageWidth);
+    { init Projection.PerspectiveAnglesRad.Y }
+    if Projection.PerspectiveAnglesRad.Y = 0.0 then
+      Projection.PerspectiveAnglesRad.Y := AdjustViewAngleRadToAspectRatio(
+        Projection.PerspectiveAnglesRad.X, ImageHeight/ImageWidth);
 
     { create MyRayTracer instance, set it's properties }
     case RTKind of
