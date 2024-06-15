@@ -1,5 +1,5 @@
 {
-  Copyright 2003-2017 Michalis Kamburelis.
+  Copyright 2003-2024 Michalis Kamburelis.
 
   This file is part of "rayhunter".
 
@@ -24,9 +24,9 @@ program RayHunter;
 
 uses SysUtils, Classes, Math,
   CastleVectors, CastleRayTracer, CastleSceneCore,
-  CastleImages, CastleUtils, CastleProgress, CastleProgressConsole,
+  CastleImages, CastleUtils,
   CastleParameters, CastleURIUtils, CastleProjection, CastleRectangles,
-  X3DFields, X3DNodes, CastleRays, CastleStringUtils, CastleApplicationProperties,
+  X3DFields, X3DNodes, CastleInternalRays, CastleStringUtils, CastleApplicationProperties,
   CastleTimeUtils, CastleFilesUtils, CastleLog,
 
   { TODO: CastleViewport and CastleScene use OpenGL,
@@ -84,7 +84,6 @@ procedure PixelsMadeNotify(PixelsMadeCount: Cardinal; Data: Pointer);
 begin
   if PixelsMadeCount mod ImageWidth <> 0 then Exit;
 
-  Progress.Step;
   { jezeli WritePartialRows jest wlaczone i jezeli ilosc zrobionych wierszy
     jest podzielna przez WritePartialRows (i wieksza od zera) i jezeli
     nie zrobilismy jeszcze calego obrazka to zapisz obrazek czesciowy. }
@@ -265,9 +264,6 @@ begin
   SceneURL := Parameters[1]; Parameters.Delete(0);
   OutImageURL := Parameters[1]; Parameters.Delete(0);
 
-  { register progres showing on console }
-  Progress.UserInterface := ProgressConsoleInterface;
-
   { init some vars to nil values (to allow simple try..finally..end clause
     instead of nested try..try.. ... finally .. finally ...end) }
   Scene := nil;
@@ -288,7 +284,6 @@ begin
        Scene.VerticesCount(false)]));
 
     { calculate Scene.TriangleOctree }
-    Scene.TriangleOctreeProgressTitle := 'Building octree';
     Scene.Spatial := [ssVisibleTriangles];
 
     { calculate Viewport (will be used for headlight in LightsForRaytracer) }
@@ -396,10 +391,7 @@ begin
 
     { go ! }
     Stats := TStringList.Create;
-    Progress.Init(ImageHeight-FirstRow, 'Rendering');
-    try
-      MyRayTracer.ExecuteStats(Stats);
-    finally Progress.Fini; end;
+    MyRayTracer.ExecuteStats(Stats);
 
     Writeln(Stats.Text);
 
