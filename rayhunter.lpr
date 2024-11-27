@@ -27,7 +27,7 @@ uses SysUtils, Classes, Math,
   CastleImages, CastleUtils,
   CastleParameters, CastleURIUtils, CastleProjection, CastleRectangles,
   X3DFields, X3DNodes, CastleInternalRays, CastleStringUtils, CastleApplicationProperties,
-  CastleTimeUtils, CastleFilesUtils, CastleLog,
+  CastleTimeUtils, CastleFilesUtils, CastleLog, CastleInternalTriangleOctree,
 
   { TODO: CastleViewport and CastleScene use OpenGL,
     and we would prefer rayhunter to not depend on OpenGL
@@ -110,13 +110,16 @@ begin
   end;
 end;
 
-function LightsForRaytracer(const Viewport: TCastleViewport): TLightInstancesList;
-var
-  HI: TLightInstance;
+type
+  TMyViewport = class(TCastleViewport)
+  public
+    function BaseLightsForRaytracer: TLightInstancesList;
+  end;
+
+function TMyViewport.BaseLightsForRaytracer: TLightInstancesList;
 begin
   Result := TLightInstancesList.Create;
-  if Viewport.HeadlightInstance(HI) then
-    Result.Add(HI);
+  InitializeGlobalLights(Result);
 end;
 
 const
@@ -175,8 +178,8 @@ const
               'Options can be actually anywhere on the command-line, mixed between' +nl+
               'the required parameters shown in the above "usage" specification.' +nl+
               'Accepted options are:' +nl+
-              HelpOptionHelp +nl+
-              VersionOptionHelp +nl+
+              OptionDescription('-h / --help', 'Print this help message and exit.') + NL +
+              OptionDescription('-v / --version', 'Print the version number and exit.') + NL +
               '  -p / --camera-pos POS.X POS.Y POS.Z ,' +nl+
               '  -d / --camera-dir DIR.X DIR.Y DIR.Z ,' +nl+
               '  -u / --camera-up  UP.X  UP.Y  UP.Z' +nl+
@@ -208,7 +211,7 @@ const
               '  --primary-samples-count COUNT' +nl+
               '                        Set primary samples count (default 1)' +nl+
               nl+
-              SCastleEngineProgramHelpSuffix('rayhunter', Version, true));
+              ApplicationProperties.Description);
             Halt;
           end;
       12: begin
@@ -235,8 +238,9 @@ var
   ModelProjectionType: TProjectionType;
   Viewpoint: TAbstractViewpointNode;
   FieldOfView: TMFFloat;
-  Viewport: TCastleViewport;
+  Viewport: TMyViewport;
   Stats: TStringList;
+  OctreeVisibleTriangles: TTriangleOctree;
 begin
   { defaults for Projection }
   Projection.ProjectionType := ptPerspective;
@@ -264,13 +268,15 @@ begin
   SceneURL := Parameters[1]; Parameters.Delete(0);
   OutImageURL := Parameters[1]; Parameters.Delete(0);
 
-  { init some vars to nil values (to allow simple try..finally..end clause
+  { inititialize some variables to nil values
+    (to allow simple try..finally..end clause
     instead of nested try..try.. ... finally .. finally ...end) }
   Scene := nil;
   Image := nil;
   Viewport := nil;
   Stats := nil;
   MyRayTracer := nil;
+  OctreeVisibleTriangles := nil;
 
   try
     { read scene and build SceneOctree }
@@ -279,15 +285,13 @@ begin
     Scene := TCastleScene.Create(nil);
     Scene.Load(SceneURL);
     Writeln('done.');
-    Writeln(Format('Scene contains %d triangles and %d vertices.',
-      [Scene.TrianglesCount(false),
-       Scene.VerticesCount(false)]));
-
-    { calculate Scene.TriangleOctree }
-    Scene.Spatial := [ssVisibleTriangles];
+    Writeln(Format('Scene contains %d triangles and %d vertices.', [
+      Scene.TrianglesCount,
+      Scene.VerticesCount
+    ]));
 
     { calculate Viewport (will be used for headlight in LightsForRaytracer) }
-    Viewport := TCastleViewport.Create(nil);
+    Viewport := TMyViewport.Create(nil);
     Viewport.Items.MainScene := Scene;
     Viewport.Items.Add(Scene);
 
@@ -358,6 +362,8 @@ begin
       Projection.PerspectiveAnglesRad.Y := AdjustViewAngleRadToAspectRatio(
         Projection.PerspectiveAnglesRad.X, ImageHeight/ImageWidth);
 
+    OctreeVisibleTriangles := CreateOctreeVisibleTrianglesForScene(Scene);
+
     { create MyRayTracer instance, set it's properties }
     case RTKind of
       rtkClassic:
@@ -365,8 +371,8 @@ begin
           MyRayTracer := TClassicRayTracer.Create;
           TClassicRayTracer(MyRayTracer).InitialDepth := RTDepth;
           TClassicRayTracer(MyRayTracer).FogNode := Scene.FogStack.Top;
-          TClassicRayTracer(MyRayTracer).BaseLights := LightsForRaytracer(Viewport);
-          TClassicRayTracer(MyRayTracer).OwnsBaseLights := true;
+          TClassicRayTracer(MyRayTracer).GlobalLights := Viewport.BaseLightsForRaytracer;
+          TClassicRayTracer(MyRayTracer).OwnsGlobalLights := true;
         end;
       rtkPathTracer:
         begin
@@ -379,7 +385,7 @@ begin
         end;
     end;
     MyRayTracer.Image := Image;
-    MyRayTracer.Octree := Scene.InternalOctreeVisibleTriangles;
+    MyRayTracer.Octree := OctreeVisibleTriangles;
     MyRayTracer.CamPosition := CamPos;
     MyRayTracer.CamDirection := CamDir;
     MyRayTracer.CamUp := CamUp;
@@ -397,6 +403,7 @@ begin
 
     SaveImage(Image, OutImageURL);
   finally
+    FreeAndNil(OctreeVisibleTriangles);
     FreeAndNil(Scene);
     FreeAndNil(Image);
     FreeAndNil(Viewport);

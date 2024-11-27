@@ -5,4 +5,5 @@
     <include path="README.md" />
     <include path="test.sh" />
   </package>
+  <data exists="false" />
 </project>
